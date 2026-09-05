@@ -56,14 +56,17 @@ def build_slate(season=2026, fetch_live=True):
         except Exception as e:
             print("odds fetch failed:",e)
 
-    # DURABLE openers from CFBD (Bovada recorded opener) — survives reboots, re-pulled every refresh
-    OPEN={}
+    # DURABLE openers + closes from CFBD (never live/in-game) — survives reboots, re-pulled every refresh
+    OPEN={}; CLOSE={}
     if fetch_live:
         for w in range(wk, wk+4):
             try:
                 for r in ODDS.fetch_cfbd_lines(season, w).itertuples():
                     ob=getattr(r,"open_bovada",None)
                     if ob is not None and pd.notna(ob): OPEN[(r.home,r.away)]=float(ob)
+                    cc=getattr(r,"close_consensus",None); bc=getattr(r,"book_total_consensus",None)
+                    cv=cc if (cc is not None and pd.notna(cc)) else bc
+                    if cv is not None and pd.notna(cv): CLOSE[(r.home,r.away)]=float(cv)
             except Exception: pass
 
     rows=[]
@@ -88,7 +91,7 @@ def build_slate(season=2026, fetch_live=True):
             open_total=round(mopen,1) if (mopen is not None and pd.notna(mopen)) else None,
             edge=edge, side=("OVER" if (edge or 0)>0 else "UNDER") if edge is not None else None,
             mkt_spread=round(mspread,1) if (mspread is not None and pd.notna(mspread)) else None,
-            actual_total=actual,
+            actual_total=actual, close_total=CLOSE.get((g.home,g.away)),
             home_rank=RANKS.get(g.home), away_rank=RANKS.get(g.away), tv=MEDIA.get((g.home,g.away)),
             n_books=od.get("n_books"), w_current=round(np.mean([ratings.get(g.home,{}).get("w",0),ratings.get(g.away,{}).get("w",0)]),2)))
     slate=pd.DataFrame(rows)

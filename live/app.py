@@ -70,6 +70,7 @@ details.gc[open]>summary .game{border-color:#3a4d7a;box-shadow:0 8px 26px rgba(0
 details.gc .dpan{margin:0 0 0;border-radius:0 0 14px 14px;border-top:0;}
 .kick{color:var(--mut);font-size:12px;font-weight:700;text-align:center;line-height:1.35;} .kick .nd{color:var(--vio);font-size:10px;}
 .kick .tv{color:#7fb2ff;font-size:10px;font-weight:700;margin-top:4px;white-space:nowrap;}
+.kick .live{color:var(--red);font-size:10px;font-weight:800;margin-top:3px;}
 .match .rk{font-size:10px;font-weight:900;color:var(--amb);vertical-align:top;}
 .match .a{color:#c7d2ea;font-weight:600;font-size:15px;} .match .at{color:var(--mut);margin:0 4px;}
 .match .h{color:#fff;font-weight:800;font-size:15px;} .match .meta{color:var(--mut);font-size:11px;margin-top:3px;}
@@ -133,8 +134,9 @@ div[role="radiogroup"]{gap:6px;} div[role="radiogroup"] label{background:var(--c
 /* ===== MOBILE ONLY (<=680px) — desktop layout is untouched ===== */
 @media (max-width:680px){
   .block-container{padding-left:.7rem;padding-right:.7rem;}
-  div[data-testid="stHorizontalBlock"]{flex-wrap:wrap!important;gap:8px!important;}
-  div[data-testid="stHorizontalBlock"]>div[data-testid="column"]{flex:1 1 42%!important;min-width:42%!important;}
+  div[data-testid="stHorizontalBlock"]{flex-wrap:wrap!important;gap:6px!important;}
+  div[data-testid="stHorizontalBlock"]>div[data-testid="column"]{flex:1 1 21%!important;min-width:21%!important;}
+  .kpi{padding:9px 6px;} .kpi .n{font-size:18px;} .kpi .l{font-size:8.5px;letter-spacing:.2px;margin-top:3px;}
   .hero h1{font-size:24px;} .hero{padding:16px 18px;}
   .game{grid-template-columns:1fr auto;grid-template-areas:"match sig" "mv mv" "kick sp";gap:8px 10px;padding:12px 14px;}
   .game .kick{grid-area:kick;text-align:left;}
@@ -386,18 +388,21 @@ def render_board():
     def _kicked(iso):
         try: return datetime.fromisoformat(str(iso).replace("Z","+00:00"))<=now
         except: return False
-    kicked=wkraw.kick.map(_kicked) if "kick" in wkraw.columns else pd.Series(False,index=wkraw.index)
-    # board = games NOT yet kicked off (so "Now" only ever shows the pre-game market, never live in-game totals)
-    wkall=wkraw[wkraw.actual_total.isna() & (~kicked)].copy()
-    wkall["move"]=np.where(wkall.side=="OVER", wkall.mkt_total-wkall.open_total, wkall.open_total-wkall.mkt_total)  # + toward model
+    wkall=wkraw[wkraw.actual_total.isna()].copy()   # all not-final games (upcoming + in-progress)
+    wkall["kicked"]=(wkall.kick.map(_kicked) if "kick" in wkall.columns else False)
+    ct=wkall["close_total"] if "close_total" in wkall.columns else pd.Series(np.nan,index=wkall.index)
+    # "Now" = live pre-game market until kickoff, then the frozen CFBD close (never a live in-game total)
+    wkall["now_val"]=np.where(wkall.kicked, ct.fillna(wkall.open_total), wkall.mkt_total)
+    wkall["move"]=np.where(wkall.side=="OVER", wkall.now_val-wkall.open_total, wkall.open_total-wkall.now_val)  # + toward model
     view=wkall.copy()
     if show.startswith("Bets"): view=view[view.abs_edge>=5]
     elif show.startswith("Leans"): view=view[view.abs_edge>=3]
     if side_f=="Overs only": view=view[view.side=="OVER"]
     elif side_f=="Unders only": view=view[view.side=="UNDER"]
-    confirmed=int(((wkall.abs_edge>=3)&(wkall.move>=1)).sum())
-    kpis([("Upcoming",str(len(wkall)),""),("Strong ★",str(int((wkall.abs_edge>=5).sum())),"g"),
-          ("Leans",str(int(((wkall.abs_edge>=3)&(wkall.abs_edge<5)).sum())),""),
+    bettable=wkall[~wkall.kicked.astype(bool)]   # KPI counts reflect games you can still bet
+    confirmed=int(((bettable.abs_edge>=3)&(bettable.move>=1)).sum())
+    kpis([("Upcoming",str(len(bettable)),""),("Strong ★",str(int((bettable.abs_edge>=5).sum())),"g"),
+          ("Leans",str(int(((bettable.abs_edge>=3)&(bettable.abs_edge<5)).sum())),""),
           ("Market ✓",str(confirmed),"g")])
     wkbets = track[(track.season==meta.get("season",2026))&(track.week==wk)&(track.rec.isin(["OVER","UNDER"]))] if (track is not None and len(track)) else None
     if wkbets is not None and len(wkbets):
@@ -430,11 +435,12 @@ def render_board():
             elif move<=-0.5: mvchip=f'<div class="mvc dn">mkt ⚠ {move:.1f}</div>'
             else: mvchip='<div class="mvc flat">mkt →</div>'
         else: mvchip=''
+        _kk=bool(getattr(r,"kicked",False)); nv=getattr(r,"now_val",r.mkt_total); nowlbl="Close" if _kk else "Now"
         edtxt=f'<span class="eplus">{"+" if (edge or 0)>0 else ""}{edge:.1f}</span>' if edge is not None else ""
-        mv=(f'<div class="mv"><div class="step"><div class="k">Open</div><div class="v mono">{fnum(r.open_total)}</div></div>{arrow(r.open_total,r.mkt_total)}'
-            f'<div class="step"><div class="k">Now</div><div class="v mono">{fnum(r.mkt_total)}</div></div><span class="ar">·</span>'
+        mv=(f'<div class="mv"><div class="step"><div class="k">Open</div><div class="v mono">{fnum(r.open_total)}</div></div>{arrow(r.open_total,nv)}'
+            f'<div class="step"><div class="k">{nowlbl}</div><div class="v mono">{fnum(nv)}</div></div><span class="ar">·</span>'
             f'<div class="step"><div class="k">Proj {edtxt}</div><div class="v proj mono">{fnum(r.proj_total)}</div></div></div>')
-        nd='<div class="nd">◇ NEUTRAL</div>' if r.neutral else ''
+        nd='<div class="live">🔴 in progress</div>' if _kk else ('<div class="nd">◇ NEUTRAL</div>' if r.neutral else '')
         _hr=getattr(r,"home_rank",None); _ar=getattr(r,"away_rank",None); _tv=getattr(r,"tv",None)
         hr=f'<span class="rk">#{int(_hr)}</span> ' if (_hr is not None and pd.notna(_hr)) else ''
         ar=f'<span class="rk">#{int(_ar)}</span> ' if (_ar is not None and pd.notna(_ar)) else ''
