@@ -40,6 +40,8 @@ def build_slate(season=2026, fetch_live=True):
 
     sched=pd.read_csv(f"{DATA}/games.csv"); sched=sched[(sched.season==season)&(sched.season_type=="regular")].copy()
     sched=sched[(sched.home_div=="fbs")&(sched.away_div=="fbs")]
+    RANKS=ODDS.fetch_ap_top25(season)   # latest AP Top 25 {school:rank}, auto-current
+    MEDIA=ODDS.fetch_media(season)      # {(home,away): tv outlet}
 
     # live odds -> dict by (home,away)
     OD={}; rem="n/a"
@@ -87,6 +89,7 @@ def build_slate(season=2026, fetch_live=True):
             edge=edge, side=("OVER" if (edge or 0)>0 else "UNDER") if edge is not None else None,
             mkt_spread=round(mspread,1) if (mspread is not None and pd.notna(mspread)) else None,
             actual_total=actual,
+            home_rank=RANKS.get(g.home), away_rank=RANKS.get(g.away), tv=MEDIA.get((g.home,g.away)),
             n_books=od.get("n_books"), w_current=round(np.mean([ratings.get(g.home,{}).get("w",0),ratings.get(g.away,{}).get("w",0)]),2)))
     slate=pd.DataFrame(rows)
     if len(slate):

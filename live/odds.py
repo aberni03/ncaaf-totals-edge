@@ -83,6 +83,32 @@ def log_snapshot(df):
     return opener[["home","away","book_total_bovada","book_total_consensus"]].rename(
         columns={"book_total_bovada":"open_bovada","book_total_consensus":"open_consensus"})
 
+def fetch_ap_top25(season):
+    """Latest AP Top 25 as {school: rank}. Auto-current: takes the most recent week's poll."""
+    try:
+        r=requests.get("https://api.collegefootballdata.com/rankings",params={"year":season},
+            headers={"Authorization":f"Bearer {CFBD_KEY}"},timeout=30)
+        d=r.json(); aps=[(x["week"],p) for x in d for p in x.get("polls",[]) if p.get("poll")=="AP Top 25"]
+        if not aps: return {}
+        lw=max(w for w,_ in aps); poll=next(p for w,p in aps if w==lw)
+        return {t["school"]:t["rank"] for t in poll.get("ranks",[])}
+    except Exception:
+        return {}
+
+def fetch_media(season):
+    """{(home,away): tv_outlet} for the season (prefers TV over streaming)."""
+    try:
+        r=requests.get("https://api.collegefootballdata.com/games/media",
+            params={"year":season,"seasonType":"regular"},headers={"Authorization":f"Bearer {CFBD_KEY}"},timeout=60)
+        out={}
+        for g in r.json():
+            k=(g.get("homeTeam"),g.get("awayTeam")); ou=g.get("outlet")
+            if not ou: continue
+            if k not in out or g.get("mediaType")=="tv": out[k]=ou
+        return out
+    except Exception:
+        return {}
+
 def fetch_cfbd_lines(season, week):
     """Fallback / historical: CFBD lines incl. Bovada open."""
     r=requests.get("https://api.collegefootballdata.com/lines",

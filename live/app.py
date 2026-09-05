@@ -63,6 +63,8 @@ details.gc>summary .game{margin-bottom:0;}
 details.gc[open]>summary .game{border-color:#3a4d7a;box-shadow:0 8px 26px rgba(0,0,0,.45);border-bottom-left-radius:0;border-bottom-right-radius:0;}
 details.gc .dpan{margin:0 0 0;border-radius:0 0 14px 14px;border-top:0;}
 .kick{color:var(--mut);font-size:12px;font-weight:700;text-align:center;line-height:1.35;} .kick .nd{color:var(--vio);font-size:10px;}
+.kick .tv{color:#7fb2ff;font-size:10px;font-weight:700;margin-top:4px;white-space:nowrap;}
+.match .rk{font-size:10px;font-weight:900;color:var(--amb);vertical-align:top;}
 .match .a{color:#c7d2ea;font-weight:600;font-size:15px;} .match .at{color:var(--mut);margin:0 4px;}
 .match .h{color:#fff;font-weight:800;font-size:15px;} .match .meta{color:var(--mut);font-size:11px;margin-top:3px;}
 .mv{display:flex;align-items:center;justify-content:center;gap:8px;}
@@ -159,7 +161,7 @@ _tstamp=_gen.split(" ",1)[1] if (isinstance(_gen,str) and " " in _gen) else _gen
 c1,c2=st.columns([3.3,1])
 with c1:
     st.markdown('<div class="hero"><h1>🏈 CFB Totals <span class="ac">Edge</span></h1>'
-      '<div class="sub">Model-powered over/under picks for college football — we spot soft opening lines, so bet early.</div></div>',
+      '<div class="sub">Model-powered over/under picks for college football — catch soft opening lines before they move.</div></div>',
       unsafe_allow_html=True)
 def run_job(script, label, args=None):
     with st.spinner(f"{label}…"):
@@ -415,8 +417,12 @@ def render_board():
             f'<div class="step"><div class="k">Now</div><div class="v mono">{fnum(r.mkt_total)}</div></div><span class="ar">·</span>'
             f'<div class="step"><div class="k">Proj {edtxt}</div><div class="v proj mono">{fnum(r.proj_total)}</div></div></div>')
         nd='<div class="nd">◇ NEUTRAL</div>' if r.neutral else ''
-        return (f'<div class="game {cls}"><div class="kick">{"" if pd.isna(r.time) else r.time}{nd}</div>'
-          f'<div class="match"><div><span class="a">{r.away}</span><span class="at">@</span><span class="h">{r.home}</span></div>'
+        _hr=getattr(r,"home_rank",None); _ar=getattr(r,"away_rank",None); _tv=getattr(r,"tv",None)
+        hr=f'<span class="rk">#{int(_hr)}</span> ' if (_hr is not None and pd.notna(_hr)) else ''
+        ar=f'<span class="rk">#{int(_ar)}</span> ' if (_ar is not None and pd.notna(_ar)) else ''
+        tvh=f'<div class="tv">📺 {_tv}</div>' if (_tv is not None and pd.notna(_tv) and str(_tv)!="") else ''
+        return (f'<div class="game {cls}"><div class="kick">{"" if pd.isna(r.time) else r.time}{nd}{tvh}</div>'
+          f'<div class="match"><div><span class="a">{ar}{r.away}</span><span class="at">@</span><span class="h">{hr}{r.home}</span></div>'
           f'<div class="meta">{int(r.n_books) if pd.notna(r.n_books) else ""} books</div></div>'
           f'{mv}<div class="sp"><div class="k">Spread</div><div class="v mono">{sp(r.mkt_spread)}</div></div><div class="sig">{badge}{mvchip}</div></div>')
     if len(view)==0: st.info("No games match these filters.")
