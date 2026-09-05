@@ -346,7 +346,7 @@ def play_call(edge, side, open_t, now_t):
 
 def render_footer():
     st.markdown('''<div class="keybar"><div class="kt">📖 Quick key</div>
-      <span class="ki"><b>★</b> — our strongest picks (bet these)</span>
+      <span class="ki"><b>★</b> — strongest picks</span>
       <span class="ki"><span class="gk">✓</span> — the betting market is moving toward our pick (good sign)</span>
       <span class="ki"><span class="rk">⚠</span> — the market is moving away from our pick (be careful)</span>
       <span class="ki"><b>Open → Now → Proj</b> — where the line opened, where it is now, and what we predict the total will be</span>
