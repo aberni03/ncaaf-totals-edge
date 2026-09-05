@@ -79,6 +79,15 @@ details.gc .dpan{margin:0 0 0;border-radius:0 0 14px 14px;border-top:0;}
 .badge.avoid{background:#2a3040;color:#8b93a7;} .badge.caution{background:transparent;border:1.5px solid var(--amb);color:var(--amb);}
 .mvc{font-size:10px;font-weight:800;margin-top:5px;letter-spacing:.3px;text-align:center;}
 .mvc.up{color:var(--grn);} .mvc.dn{color:var(--red);} .mvc.flat{color:var(--mut);}
+/* one-tap bet widget (POC on Clemson-LSU): click chip -> pick book -> opens bet slip */
+.betw{margin:-3px 0 12px;border:1px solid #2a3a5c;border-top:0;border-radius:0 0 13px 13px;background:linear-gradient(180deg,#101a30,#0c1424);overflow:hidden;}
+.betw>summary{list-style:none;cursor:pointer;padding:10px 18px;font-size:13px;font-weight:800;color:var(--amb);display:flex;align-items:center;gap:8px;}
+.betw>summary::-webkit-details-marker{display:none;} .betw>summary::marker{content:"";}
+.betw>summary .conf{color:var(--grn);font-size:11px;font-weight:800;}
+.betw .books{display:flex;gap:9px;flex-wrap:wrap;padding:2px 18px 12px;}
+.betw .bk{padding:8px 15px;border-radius:9px;font-weight:900;font-size:12px;text-decoration:none;letter-spacing:.2px;}
+.betw .bk.dk{background:#53d337;color:#04210a;} .betw .bk.fd{background:#1493ff;color:#fff;}
+.betw .alt{color:var(--mut);font-size:11px;padding:0 18px 12px;} .betw .alt a{color:#8fb2ff;text-decoration:none;font-weight:700;}
 .game.aplus{border-left-color:var(--cyan);} .game.avoid{border-left-color:#39415a;opacity:.82;}
 .eplus{color:var(--grn);font-weight:800;} .eminus{color:var(--red);font-weight:800;}
 /* results table */
@@ -397,6 +406,16 @@ def render_board():
             for r in view[view.day==day].itertuples():
                 dh=detail_html(r, meta.get("season",2026), rwk)
                 st.markdown(f'<details class="gc"><summary>{row(r)}</summary>{dh}</details>',unsafe_allow_html=True)
+                if r.home=="LSU" and r.away=="Clemson":   # --- one-tap bet POC (this game only) ---
+                    st.markdown(
+                      '<details class="betw"><summary>🎰 Bet UNDER 49.5 &nbsp;▾ <span class="conf">✓ market moved to your side</span></summary>'
+                      '<div class="books">'
+                      '<a class="bk dk" href="https://sportsbook.draftkings.com/?outcomes=0OU84376928U4950_3" target="_blank" rel="noopener">DraftKings ↗</a>'
+                      '<a class="bk fd" href="https://sportsbook.fanduel.com/addToBetslip?marketId=42.551699236&selectionId=7017917" target="_blank" rel="noopener">FanDuel ↗</a>'
+                      '</div>'
+                      '<div class="alt">Prefer the over? <a href="https://sportsbook.draftkings.com/?outcomes=0OU84376928O4950_1" target="_blank" rel="noopener">DraftKings</a> · '
+                      '<a href="https://sportsbook.fanduel.com/addToBetslip?marketId=42.551699236&selectionId=7017916" target="_blank" rel="noopener">FanDuel</a></div></details>',
+                      unsafe_allow_html=True)
     st.markdown('<div class="legend"><b>Open → Now → Proj</b>: opener → current line vs model projection. '
       '<b>★</b> = strong play (edge ≥ 5). <b>✓</b> = market agrees (line has moved 1+ pt toward the model since the opener). '
       '<b>mkt ✓ / ⚠</b> chip = points the line moved toward (✓) or against (⚠) the model. '
