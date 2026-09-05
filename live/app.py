@@ -33,6 +33,7 @@ CSS="""
 .hero h1{font-size:31px;font-weight:900;color:#fff;margin:0;letter-spacing:-.7px;}
 .hero h1 .ac{background:linear-gradient(90deg,var(--grn),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
 .hero .sub{color:var(--mut);font-size:13px;margin-top:5px;} .hero .sub b{color:var(--grn);}
+.stamp{text-align:right;color:var(--mut);font-size:11px;margin:2px 0 8px;} .stamp b{color:#c7d2ea;}
 .bank{background:linear-gradient(120deg,#122murky,#0b1424);background:linear-gradient(120deg,#122748,#0b1424);border:1px solid #24365d;border-radius:18px;padding:16px 24px;margin:2px 0 16px;display:grid;grid-template-columns:minmax(240px,auto) 1fr;gap:26px;align-items:center;position:relative;overflow:hidden;}
 .bank:before{content:'';position:absolute;left:-30px;top:-40px;width:180px;height:180px;background:radial-gradient(circle,rgba(25,229,155,.14),transparent 70%);}
 .bank .sub{color:var(--mut);font-size:12px;letter-spacing:.4px;} .bank .sub b{font-weight:800;}
@@ -153,11 +154,12 @@ def load():
     return s,m,tr
 slate,meta,track=load()
 
+_gen=meta.get("generated","—") if meta else "—"
+_tstamp=_gen.split(" ",1)[1] if (isinstance(_gen,str) and " " in _gen) else _gen
 c1,c2=st.columns([3.3,1])
 with c1:
     st.markdown('<div class="hero"><h1>🏈 CFB Totals <span class="ac">Edge</span></h1>'
-      f'<div class="sub">De-anchored model · edge vs the <b>opener</b> (bet early for CLV) · '
-      f'updated {meta.get("generated","—") if meta else "—"} · odds credits left: <b>{meta.get("requests_remaining","—")}</b></div></div>',
+      '<div class="sub">Model-powered over/under picks for college football — we spot soft opening lines, so bet early.</div></div>',
       unsafe_allow_html=True)
 def run_job(script, label, args=None):
     with st.spinner(f"{label}…"):
@@ -168,7 +170,7 @@ def run_job(script, label, args=None):
         st.session_state["_msg"]=("err",f"⚠️ {label} failed:\n{(r.stderr or r.stdout)[-600:]}")
 
 with c2:
-    st.markdown("<div style='height:8px'></div>",unsafe_allow_html=True)
+    st.markdown(f'<div class="stamp">⟳ updated {_tstamp} · <b>{meta.get("requests_remaining","—") if meta else "—"}</b> credits</div>',unsafe_allow_html=True)
     if st.button("🔄  Refresh odds", use_container_width=True,
                  help="Re-pull live lines & re-project with current ratings (1 odds credit). Use Sun–Tue as openers post."):
         run_job("project_slate.py","Refreshing live odds")
