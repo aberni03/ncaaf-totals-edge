@@ -135,8 +135,8 @@ div[role="radiogroup"]{gap:6px;} div[role="radiogroup"] label{background:var(--c
 @media (max-width:680px){
   .block-container{padding-left:.7rem;padding-right:.7rem;}
   div[data-testid="stHorizontalBlock"]{flex-wrap:wrap!important;gap:6px!important;}
-  div[data-testid="stHorizontalBlock"]>div[data-testid="column"]{flex:1 1 21%!important;min-width:21%!important;}
-  .kpi{padding:9px 6px;} .kpi .n{font-size:18px;} .kpi .l{font-size:8.5px;letter-spacing:.2px;margin-top:3px;}
+  div[data-testid="stHorizontalBlock"]>div[data-testid="column"]{flex:1 1 46%!important;min-width:46%!important;max-width:49%!important;}
+  .kpi{padding:8px 10px;} .kpi .n{font-size:19px;} .kpi .l{font-size:9px;letter-spacing:.3px;margin-top:2px;}
   /* keep the green buttons, just make them compact on mobile */
   .stButton button{font-size:11.5px!important;padding:4px 9px!important;min-height:0!important;}
   .hero h1{font-size:24px;} .hero{padding:16px 18px;}
