@@ -75,6 +75,11 @@ details.gc .dpan{margin:0 0 0;border-radius:0 0 14px 14px;border-top:0;}
 .badge.u{background:linear-gradient(90deg,var(--grn),#12b985);color:#042317;box-shadow:0 0 18px rgba(25,229,155,.25);}
 .badge.lean{background:transparent;border:1.5px solid;} .badge.lean.o{color:var(--grn);border-color:var(--grn);} .badge.lean.u{color:var(--grn);border-color:var(--grn);}
 .badge.none{background:#141d33;color:#5b688a;font-weight:700;}
+.badge.aplus{background:linear-gradient(90deg,var(--grn),var(--cyan));color:#042317;box-shadow:0 0 22px rgba(56,214,255,.38);}
+.badge.avoid{background:#2a3040;color:#8b93a7;} .badge.caution{background:transparent;border:1.5px solid var(--amb);color:var(--amb);}
+.mvc{font-size:10px;font-weight:800;margin-top:5px;letter-spacing:.3px;text-align:center;}
+.mvc.up{color:var(--grn);} .mvc.dn{color:var(--red);} .mvc.flat{color:var(--mut);}
+.game.aplus{border-left-color:var(--cyan);} .game.avoid{border-left-color:#39415a;opacity:.82;}
 .eplus{color:var(--grn);font-weight:800;} .eminus{color:var(--red);font-weight:800;}
 /* results table */
 .trow{display:grid;grid-template-columns:66px 1fr 150px 60px 72px 62px 54px 40px;gap:10px;align-items:center;
@@ -292,29 +297,49 @@ def team_card(name, rt, feat, side):
       + row("Proj pass yds", f'{py:.0f} @ {ypa:.1f}/att') + row("Proj rush yds", f'{ry:.0f} @ {yrc:.1f}/att')
       + '</div>')
 
+def play_call(edge, side, open_t, now_t):
+    """LIVE board recommendation, adjusted for market movement since the opener.
+    Returns (call, move) where move = points the market moved TOWARD the model (+) or against (-).
+    Backtested: STRONG or confirmed-LEAN + market moving toward = ~60-65%; moved 2+ against = ~45% (avoid).
+    NOTE: applied to the live board ONLY — the Track Record stays pure edge-based."""
+    if edge is None or (isinstance(edge,float) and pd.isna(edge)): return "NONE", None
+    ae=abs(edge); tier = "STRONG" if ae>=5 else ("LEAN" if ae>=3 else "NONE")
+    move=None
+    if open_t is not None and now_t is not None and pd.notna(open_t) and pd.notna(now_t):
+        move=(now_t-open_t) if side=="OVER" else (open_t-now_t)   # + = toward model's side
+    if tier=="NONE": return "NONE", move                          # edge<3: not a play, movement irrelevant
+    if move is not None and move<=-2: return "AVOID", move        # a PLAY the market moved 2+ against -> skip
+    if tier=="STRONG" and move is not None and move>=1: return "APLUS", move
+    if tier=="LEAN"  and move is not None and move>=2: return "APLUS", move   # confirmed lean -> upgrade to a play
+    if tier=="STRONG": return "STRONG", move
+    if tier=="LEAN":   return "LEAN", move
+    return "NONE", move
+
 # ============================= BOARD =============================
 def render_board():
     bankroll_card(track, compact=True)
     if slate is None or len(slate)==0:
         st.warning("No slate yet — run:  python3 live/project_slate.py"); return
     weeks=sorted(slate.week.dropna().unique()); cur=meta.get("current_week", weeks[0] if weeks else 1)
-    f1,f2,f3,f4=st.columns([1,1.4,1.4,1.2])
+    f1,f2,f3=st.columns([1,1.7,1.3])
     with f1: wk=st.selectbox("Week",weeks,index=weeks.index(cur) if cur in weeks else 0)
-    with f2: show=st.selectbox("Filter",["Bets: STRONG (edge ≥ 5)","Leans + bets (edge ≥ 3)","All games"])
+    with f2: show=st.selectbox("Show",["🎯 Plays (Strong + confirmed)","🔥 A+ only (market agrees)","All games","Leans + watch too"])
     with f3: side_f=st.selectbox("Side",["Both","Overs only","Unders only"])
-    with f4: minedge=st.slider("Min edge",0.0,12.0,0.0,0.5)
     wkraw=slate[slate.week==wk].copy()
     played=int(wkraw.actual_total.notna().sum())
     wkall=wkraw[wkraw.actual_total.isna()].copy()   # board = UPCOMING games only; completed -> Track Record
+    calls=[play_call(r.edge if pd.notna(r.edge) else None, r.side, r.open_total, r.mkt_total) for r in wkall.itertuples()]
+    wkall["call"]=[c for c,_ in calls]; wkall["move"]=[m for _,m in calls]
     view=wkall.copy()
-    if show.startswith("Bets"): view=view[view.abs_edge>=5]
-    elif show.startswith("Leans"): view=view[view.abs_edge>=3]
+    if show.startswith("🎯"): view=view[view.call.isin(["APLUS","STRONG"])]
+    elif show.startswith("🔥"): view=view[view.call=="APLUS"]
+    elif show.startswith("Leans"): view=view[view.call.isin(["APLUS","STRONG","LEAN"])]
     if side_f=="Overs only": view=view[view.side=="OVER"]
     elif side_f=="Unders only": view=view[view.side=="UNDER"]
-    if minedge>0: view=view[view.abs_edge.fillna(0)>=minedge]
-    kpis([("Upcoming",str(len(wkall)),""),("Strong plays",str(int((wkall.signal=='STRONG').sum())),"g"),
-          ("Leans",str(int((wkall.signal=='LEAN').sum())),""),
-          ("Best edge",f"{wkall.abs_edge.max():.1f}" if wkall.abs_edge.notna().any() else "—","g")])
+    kpis([("Upcoming",str(len(wkall)),""),
+          ("A+ plays",str(int((wkall.call=="APLUS").sum())),"g"),
+          ("Strong",str(int((wkall.call=="STRONG").sum())),""),
+          ("Avoid ⛔",str(int((wkall.call=="AVOID").sum())),"r")])
     if played:
         st.markdown(f'<div class="legend" style="border:0;margin:6px 0 0;padding:0;">✓ {played} game(s) this week already '
                     f'played — results moved to the <b>Track Record</b> tab.</div>',unsafe_allow_html=True)
@@ -323,22 +348,34 @@ def render_board():
         if o is None or c is None or pd.isna(o) or pd.isna(c) or c==o: return '<span class="ar">→</span>'
         return '<span class="ar up">↗</span>' if c>o else '<span class="ar dn">↘</span>'
     def row(r):
-        edge=r.edge if pd.notna(r.edge) else None; sig=r.signal if isinstance(r.signal,str) else "-"
-        und=(r.side=="UNDER"); cls="ov" if (edge is not None and edge>0) else ("un" if edge is not None else "")
+        edge=r.edge if pd.notna(r.edge) else None
+        call=getattr(r,"call","NONE"); move=getattr(r,"move",None)
+        und=(r.side=="UNDER"); oc="u" if und else "o"
+        base="ov" if (edge is not None and edge>0) else ("un" if edge is not None else "")
+        mod="aplus" if call=="APLUS" else ("avoid" if call=="AVOID" else "")
+        cls=(base+" "+mod).strip()
         if edge is None: badge='<span class="badge none">NO LINE</span>'
-        elif sig=="STRONG": badge=f'<span class="badge {"u" if und else "o"}">{r.side} ★</span>'
-        elif sig=="LEAN": badge=f'<span class="badge lean {"u" if und else "o"}">{r.side}</span>'
+        elif call=="AVOID": badge=f'<span class="badge avoid">⛔ {r.side}</span>'
+        elif call=="APLUS": badge=f'<span class="badge {oc} aplus">{r.side} ✓★</span>'
+        elif call=="STRONG":
+            badge=(f'<span class="badge caution">{r.side} ★⚠</span>' if (move is not None and move<=-1)
+                   else f'<span class="badge {oc}">{r.side} ★</span>')
+        elif call=="LEAN": badge=f'<span class="badge lean {oc}">{r.side}</span>'
         else: badge=f'<span class="badge none">{r.side}</span>'
+        if move is not None and not (isinstance(move,float) and pd.isna(move)):
+            if move>=0.5: mvchip=f'<div class="mvc up">mkt ✓ +{move:.1f}</div>'
+            elif move<=-0.5: mvchip=f'<div class="mvc dn">mkt ⚠ {move:.1f}</div>'
+            else: mvchip='<div class="mvc flat">mkt →</div>'
+        else: mvchip=''
         edtxt=f'<span class="eplus">{"+" if (edge or 0)>0 else ""}{edge:.1f}</span>' if edge is not None else ""
         mv=(f'<div class="mv"><div class="step"><div class="k">Open</div><div class="v mono">{fnum(r.open_total)}</div></div>{arrow(r.open_total,r.mkt_total)}'
             f'<div class="step"><div class="k">Now</div><div class="v mono">{fnum(r.mkt_total)}</div></div><span class="ar">·</span>'
             f'<div class="step"><div class="k">Proj {edtxt}</div><div class="v proj mono">{fnum(r.proj_total)}</div></div></div>')
         nd='<div class="nd">◇ NEUTRAL</div>' if r.neutral else ''
-        fin=f' · final {int(r.actual_total)}' if pd.notna(r.actual_total) else ''
         return (f'<div class="game {cls}"><div class="kick">{"" if pd.isna(r.time) else r.time}{nd}</div>'
           f'<div class="match"><div><span class="a">{r.away}</span><span class="at">@</span><span class="h">{r.home}</span></div>'
-          f'<div class="meta">{int(r.n_books) if pd.notna(r.n_books) else ""} books{fin}</div></div>'
-          f'{mv}<div class="sp"><div class="k">Spread</div><div class="v mono">{sp(r.mkt_spread)}</div></div><div class="sig">{badge}</div></div>')
+          f'<div class="meta">{int(r.n_books) if pd.notna(r.n_books) else ""} books</div></div>'
+          f'{mv}<div class="sp"><div class="k">Spread</div><div class="v mono">{sp(r.mkt_spread)}</div></div><div class="sig">{badge}{mvchip}</div></div>')
     if len(view)==0: st.info("No games match these filters.")
     else:
         rwk=meta.get("ratings_week", wk)
@@ -347,9 +384,11 @@ def render_board():
             for r in view[view.day==day].itertuples():
                 dh=detail_html(r, meta.get("season",2026), rwk)
                 st.markdown(f'<details class="gc"><summary>{row(r)}</summary>{dh}</details>',unsafe_allow_html=True)
-    st.markdown('<div class="legend"><b>Open → Now → Proj</b>: total from opener → current market vs model projection '
-      '(↗ rose, ↘ fell). <b>★ STRONG (edge ≥ 5) = the actual play</b> — backtests 56% / +6.9% ROI, positive every season. '
-      'Outline LEAN (3–5) is a <b>watch, not a bet</b> (break-even on its own). Edge is vs the opener — bet early. Not betting advice.</div>',unsafe_allow_html=True)
+    st.markdown('<div class="legend"><b>Open → Now → Proj</b>: opener → current market vs model projection. '
+      '<b>mkt ✓ / ⚠</b> = points the market has moved toward (✓) or against (⚠) the model since the opener. '
+      '<b>✓★ A+</b> = strong edge (or a market-confirmed lean) with the line steaming your way — backtests ~60–65%. '
+      '<b>★ STRONG</b> = edge ≥ 5. <b>⛔ AVOID</b> = market moved 2+ against the model (~45% historically → skip). '
+      'This confirmation logic is on the live board only — the Track Record grades every ≥3 bet the same way, all years. Not betting advice.</div>',unsafe_allow_html=True)
 
 # ============================= TRACK RECORD =============================
 def render_track():
