@@ -1,0 +1,32 @@
+# SECRETS — never commit real API keys to a public repo (loaded via Streamlit secrets instead)
+.cfbd_key
+.odds_key
+.streamlit/secrets.toml
+
+# python / os
+__pycache__/
+*.pyc
+.DS_Store
+.venv/
+venv/
+
+# logs / temp
+out/*.log
+*.log
+
+# large intermediates NOT needed by the live app (regenerated offline)
+data/features.csv
+data/features2.csv
+data/ppa_games.csv
+data/game_venue.csv
+data/venues.csv
+data/teams_loc.csv
+
+# analysis outputs (not needed to run the app)
+out/backtest_preds.csv
+out/backtest_preds_factors.csv
+out/preds_2025.csv
+out/angle_frame.csv
+out/caliber_residuals.csv
+out/build_*.log
+out/pull*.log
