@@ -112,6 +112,8 @@ div[role="radiogroup"]{gap:6px;} div[role="radiogroup"] label{background:var(--c
 /* ===== MOBILE ONLY (<=680px) — desktop layout is untouched ===== */
 @media (max-width:680px){
   .block-container{padding-left:.7rem;padding-right:.7rem;}
+  div[data-testid="stHorizontalBlock"]{flex-wrap:wrap!important;gap:8px!important;}
+  div[data-testid="stHorizontalBlock"]>div[data-testid="column"]{flex:1 1 42%!important;min-width:42%!important;}
   .hero h1{font-size:24px;} .hero{padding:16px 18px;}
   .game{grid-template-columns:1fr auto;grid-template-areas:"match sig" "mv mv" "kick sp";gap:8px 10px;padding:12px 14px;}
   .game .kick{grid-area:kick;text-align:left;}
@@ -197,6 +199,8 @@ def sparkline(vals, w=560, h=96, color="#19e59b", base=None):
 
 BK_DEFAULTS={"bk_basis":"All bets (≥3)","bk_unit":100,"bk_start":10000,"bk_scope":"All history (2020→)","bk_side":"Both","bk_clv":"All CLV"}
 def _read_bk(): return tuple(st.session_state.get(k,v) for k,v in BK_DEFAULTS.items())
+def _reset_bk():
+    for k,v in BK_DEFAULTS.items(): st.session_state[k]=v   # callback runs before widgets re-instantiate
 
 def bankroll_settings():
     for k,v in BK_DEFAULTS.items(): st.session_state.setdefault(k,v)
@@ -209,6 +213,7 @@ def bankroll_settings():
         cC,cD=st.columns(2)
         with cC: st.selectbox("Side",["Both","Overs only","Unders only"],key="bk_side")
         with cD: st.selectbox("CLV",["All CLV","CLV+ (market agreed)","CLV− (market faded)"],key="bk_clv")
+        st.button("↺  Reset to defaults", use_container_width=True, on_click=_reset_bk)
 
 def _bk_compute(track):
     basis,unit,start,scope,side,clv=_read_bk()
@@ -397,21 +402,20 @@ def render_board():
 def render_track():
     if track is None or len(track)==0:
         st.warning("No track record yet — run:  python3 live/build_track_record.py"); return
-    bankroll_settings()
-    bankroll_card(track, compact=False)
     seasons=["All"]+[str(s) for s in sorted(track.season.unique())]
     def_season=str(int(track.season.max())) if len(track) else "All"   # default to current season
-    g1,g2,g3=st.columns(3)
-    with g1: seas=st.selectbox("Season",seasons,index=seasons.index(def_season) if def_season in seasons else 0)
-    with g2: tier=st.selectbox("Bets",["All bets (≥3)","Strong only (≥5)","Leans only (3–5)"])
-    with g3: res=st.selectbox("Result",["All","Wins","Losses"])
-    h1,h2,h3=st.columns(3)
-    with h1: side_f=st.selectbox("Side",["Both","Overs only","Unders only"])
-    with h2: clv_f=st.selectbox("CLV",["All CLV","CLV+ (market agreed)","CLV− (market faded)"])
-    with h3:
-        st.markdown("<div style='height:26px'></div>",unsafe_allow_html=True)
-        if st.button("↻ Rebuild", use_container_width=True, help="Re-pull latest results + regrade the whole history."):
-            run_job("build_track_record.py","Rebuilding track record")
+    cA,cB=st.columns(2)
+    with cA: bankroll_settings()
+    with cB:
+        with st.popover("⚙️  Filter table"):
+            seas=st.selectbox("Season",seasons,index=seasons.index(def_season) if def_season in seasons else 0)
+            tier=st.selectbox("Bets",["All bets (≥3)","Strong only (≥5)","Leans only (3–5)"])
+            res=st.selectbox("Result",["All","Wins","Losses"])
+            side_f=st.selectbox("Side",["Both","Overs only","Unders only"])
+            clv_f=st.selectbox("CLV",["All CLV","CLV+ (market agreed)","CLV− (market faded)"])
+            if st.button("↻ Rebuild results", use_container_width=True, help="Re-pull latest results + regrade the whole history."):
+                run_job("build_track_record.py","Rebuilding track record")
+    bankroll_card(track, compact=False)
     d=track.copy()
     if seas!="All": d=d[d.season==int(seas)]
     bets=d[d.rec.isin(["OVER","UNDER"])].copy()       # actual bets only (a play was recommended, edge>=3)
