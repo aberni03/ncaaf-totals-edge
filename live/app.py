@@ -1,5 +1,6 @@
 """CFB Totals Edge — dashboard.  Run:  streamlit run live/app.py"""
 import os, sys, json, subprocess
+from datetime import datetime, timezone
 import pandas as pd, numpy as np
 import streamlit as st
 HERE=os.path.dirname(os.path.abspath(__file__)); ROOT=os.path.dirname(HERE); OUT=ROOT+"/out"; sys.path.insert(0,HERE)
@@ -43,6 +44,11 @@ CSS="""
 .bank .streak.hot{color:var(--amb);} .bank .streak.cold{color:var(--cyan);}
 .bank.compact{padding:12px 22px;grid-template-columns:minmax(180px,auto) 1fr;gap:20px;margin:2px 0 14px;}
 .bank.compact:before{display:none;} .bank.compact .bal{font-size:26px;}
+.wkrec{border-radius:12px;padding:10px 16px;margin:2px 0 4px;font-size:14px;font-weight:700;text-align:center;}
+.wkrec.win{background:linear-gradient(90deg,rgba(25,229,155,.20),rgba(56,214,255,.08));border:1px solid #1f7a5a;color:#d6f7ec;}
+.wkrec.loss{background:rgba(255,77,115,.12);border:1px solid #5c2130;color:#f3c0cc;}
+.wkrec.even{background:#141d33;border:1px solid var(--line);color:#c7d2ea;}
+.wkrec b{color:#fff;} .wkrec .wkn{color:var(--mut);font-weight:600;font-size:12px;}
 .kpi{background:linear-gradient(160deg,var(--card),var(--card2));border:1px solid var(--line);border-radius:16px;padding:15px 18px;}
 .kpi .n{font-size:26px;font-weight:900;color:var(--txt);line-height:1;} .kpi .n.g{color:var(--grn);} .kpi .n.r{color:var(--red);}
 .kpi .l{font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:1px;margin-top:6px;font-weight:600;}
@@ -376,7 +382,13 @@ def render_board():
     with f3: side_f=st.selectbox("Side",["Both","Overs only","Unders only"])
     wkraw=slate[slate.week==wk].copy()
     played=int(wkraw.actual_total.notna().sum())
-    wkall=wkraw[wkraw.actual_total.isna()].copy()   # board = UPCOMING games only; completed -> Track Record
+    now=datetime.now(timezone.utc)
+    def _kicked(iso):
+        try: return datetime.fromisoformat(str(iso).replace("Z","+00:00"))<=now
+        except: return False
+    kicked=wkraw.kick.map(_kicked) if "kick" in wkraw.columns else pd.Series(False,index=wkraw.index)
+    # board = games NOT yet kicked off (so "Now" only ever shows the pre-game market, never live in-game totals)
+    wkall=wkraw[wkraw.actual_total.isna() & (~kicked)].copy()
     wkall["move"]=np.where(wkall.side=="OVER", wkall.mkt_total-wkall.open_total, wkall.open_total-wkall.mkt_total)  # + toward model
     view=wkall.copy()
     if show.startswith("Bets"): view=view[view.abs_edge>=5]
@@ -387,9 +399,15 @@ def render_board():
     kpis([("Upcoming",str(len(wkall)),""),("Strong ★",str(int((wkall.abs_edge>=5).sum())),"g"),
           ("Leans",str(int(((wkall.abs_edge>=3)&(wkall.abs_edge<5)).sum())),""),
           ("Market ✓",str(confirmed),"g")])
-    if played:
-        st.markdown(f'<div class="legend" style="border:0;margin:6px 0 0;padding:0;">✓ {played} game(s) this week already '
-                    f'played — results moved to the <b>Track Record</b> tab.</div>',unsafe_allow_html=True)
+    wkbets = track[(track.season==meta.get("season",2026))&(track.week==wk)&(track.rec.isin(["OVER","UNDER"]))] if (track is not None and len(track)) else None
+    if wkbets is not None and len(wkbets):
+        dec=wkbets[wkbets.result!="PUSH"]; ww=int((dec.result=="WIN").sum()); ll=int((dec.result=="LOSS").sum()); pp=int((wkbets.result=="PUSH").sum())
+        units=ww*0.9091-ll; roi=units/(ww+ll)*100 if (ww+ll) else 0
+        wcls="win" if units>0.05 else ("loss" if units<-0.05 else "even")
+        rec=f"{ww}-{ll}"+(f"-{pp}" if pp else "")
+        st.markdown(f'<div class="wkrec {wcls}">📊 <b>Week {wk} so far</b> &nbsp; {rec} &nbsp;·&nbsp; <b>{units:+.1f}u</b> &nbsp;·&nbsp; {roi:+.0f}% ROI &nbsp;·&nbsp; <span class="wkn">{len(wkbets)} settled</span></div>',unsafe_allow_html=True)
+    elif played:
+        st.markdown(f'<div class="legend" style="border:0;margin:6px 0 0;padding:0;">✓ {played} game(s) already played this week — in the <b>Track Record</b>.</div>',unsafe_allow_html=True)
     st.markdown("<div style='height:8px'></div>",unsafe_allow_html=True)
     def arrow(o,c):
         if o is None or c is None or pd.isna(o) or pd.isna(c) or c==o: return '<span class="ar">→</span>'
