@@ -201,6 +201,10 @@ BK_DEFAULTS={"bk_basis":"All bets (≥3)","bk_unit":100,"bk_start":10000,"bk_sco
 def _read_bk(): return tuple(st.session_state.get(k,v) for k,v in BK_DEFAULTS.items())
 def _reset_bk():
     for k,v in BK_DEFAULTS.items(): st.session_state[k]=v   # callback runs before widgets re-instantiate
+def _reset_tr():
+    ds=str(int(track.season.max())) if (track is not None and len(track)) else "All"   # default = current season
+    for k,v in {"tr_season":ds,"tr_tier":"All bets (≥3)","tr_result":"All","tr_side":"Both","tr_clv":"All CLV"}.items():
+        st.session_state[k]=v
 
 def bankroll_settings():
     for k,v in BK_DEFAULTS.items(): st.session_state.setdefault(k,v)
@@ -403,18 +407,12 @@ def render_track():
     if track is None or len(track)==0:
         st.warning("No track record yet — run:  python3 live/build_track_record.py"); return
     seasons=["All"]+[str(s) for s in sorted(track.season.unique())]
-    def_season=str(int(track.season.max())) if len(track) else "All"   # default to current season
-    cA,cB=st.columns(2)
-    with cA: bankroll_settings()
-    with cB:
-        with st.popover("⚙️  Filter table"):
-            seas=st.selectbox("Season",seasons,index=seasons.index(def_season) if def_season in seasons else 0)
-            tier=st.selectbox("Bets",["All bets (≥3)","Strong only (≥5)","Leans only (3–5)"])
-            res=st.selectbox("Result",["All","Wins","Losses"])
-            side_f=st.selectbox("Side",["Both","Overs only","Unders only"])
-            clv_f=st.selectbox("CLV",["All CLV","CLV+ (market agreed)","CLV− (market faded)"])
-            if st.button("↻ Rebuild results", use_container_width=True, help="Re-pull latest results + regrade the whole history."):
-                run_job("build_track_record.py","Rebuilding track record")
+    def_season=str(int(track.season.max())) if len(track) else "All"   # default = current season
+    for k,v in {"tr_season":def_season,"tr_tier":"All bets (≥3)","tr_result":"All","tr_side":"Both","tr_clv":"All CLV"}.items():
+        st.session_state.setdefault(k,v)
+    seas=st.session_state["tr_season"]; tier=st.session_state["tr_tier"]; res=st.session_state["tr_result"]
+    side_f=st.session_state["tr_side"]; clv_f=st.session_state["tr_clv"]
+    bankroll_settings()
     bankroll_card(track, compact=False)
     d=track.copy()
     if seas!="All": d=d[d.season==int(seas)]
@@ -440,6 +438,17 @@ def render_track():
       f'model MAE <b>{mae_m:.1f}</b> vs Vegas-close MAE <b>{mae_v:.1f}</b> '
       f'({"model sharper" if mae_m<mae_v else "market sharper"}) · {clvp:.0f}% beat the closing number</div>',unsafe_allow_html=True)
     st.markdown("<div style='height:10px'></div>",unsafe_allow_html=True)
+    fcol,_=st.columns([1,2])
+    with fcol:
+        with st.popover("🔎  Filter bets"):
+            st.selectbox("Season",seasons,key="tr_season")
+            st.selectbox("Bets",["All bets (≥3)","Strong only (≥5)","Leans only (3–5)"],key="tr_tier")
+            st.selectbox("Result",["All","Wins","Losses"],key="tr_result")
+            st.selectbox("Side",["Both","Overs only","Unders only"],key="tr_side")
+            st.selectbox("CLV",["All CLV","CLV+ (market agreed)","CLV− (market faded)"],key="tr_clv")
+            st.button("↺  Reset to defaults", use_container_width=True, on_click=_reset_tr)
+            if st.button("↻  Re-grade record", use_container_width=True, help="Recompute the record from data already on the server (e.g. after a model tweak). To pull NEW game results first, use 🔃 Update week results on the board."):
+                run_job("build_track_record.py","Re-grading track record")
     if res=="Wins": bets=bets[bets.result=="WIN"]
     elif res=="Losses": bets=bets[bets.result=="LOSS"]
     bets["_dt"]=pd.to_datetime(bets.date,format="%m/%d/%y",errors="coerce")
