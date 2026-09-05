@@ -137,6 +137,8 @@ div[role="radiogroup"]{gap:6px;} div[role="radiogroup"] label{background:var(--c
   div[data-testid="stHorizontalBlock"]{flex-wrap:wrap!important;gap:6px!important;}
   div[data-testid="stHorizontalBlock"]>div[data-testid="column"]{flex:1 1 21%!important;min-width:21%!important;}
   .kpi{padding:9px 6px;} .kpi .n{font-size:18px;} .kpi .l{font-size:8.5px;letter-spacing:.2px;margin-top:3px;}
+  /* subtle refresh/update buttons on mobile */
+  .stButton button{background:#131c30!important;color:#93a2c2!important;border:1px solid var(--line)!important;font-weight:600!important;font-size:11.5px!important;padding:5px 8px!important;box-shadow:none!important;}
   .hero h1{font-size:24px;} .hero{padding:16px 18px;}
   .game{grid-template-columns:1fr auto;grid-template-areas:"match sig" "mv mv" "kick sp";gap:8px 10px;padding:12px 14px;}
   .game .kick{grid-area:kick;text-align:left;}
