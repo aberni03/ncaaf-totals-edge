@@ -79,15 +79,18 @@ details.gc .dpan{margin:0 0 0;border-radius:0 0 14px 14px;border-top:0;}
 .badge.avoid{background:#2a3040;color:#8b93a7;} .badge.caution{background:transparent;border:1.5px solid var(--amb);color:var(--amb);}
 .mvc{font-size:10px;font-weight:800;margin-top:5px;letter-spacing:.3px;text-align:center;}
 .mvc.up{color:var(--grn);} .mvc.dn{color:var(--red);} .mvc.flat{color:var(--mut);}
-/* one-tap bet widget (POC on Clemson-LSU): click chip -> pick book -> opens bet slip */
-.betw{margin:-3px 0 12px;border:1px solid #2a3a5c;border-top:0;border-radius:0 0 13px 13px;background:linear-gradient(180deg,#101a30,#0c1424);overflow:hidden;}
-.betw>summary{list-style:none;cursor:pointer;padding:10px 18px;font-size:13px;font-weight:800;color:var(--amb);display:flex;align-items:center;gap:8px;}
-.betw>summary::-webkit-details-marker{display:none;} .betw>summary::marker{content:"";}
-.betw>summary .conf{color:var(--grn);font-size:11px;font-weight:800;}
-.betw .books{display:flex;gap:9px;flex-wrap:wrap;padding:2px 18px 12px;}
-.betw .bk{padding:8px 15px;border-radius:9px;font-weight:900;font-size:12px;text-decoration:none;letter-spacing:.2px;}
-.betw .bk.dk{background:#53d337;color:#04210a;} .betw .bk.fd{background:#1493ff;color:#fff;}
-.betw .alt{color:var(--mut);font-size:11px;padding:0 18px 12px;} .betw .alt a{color:#8fb2ff;text-decoration:none;font-weight:700;}
+/* bottom-of-page: plain-English key + Bet Now book bar */
+.keybar{border-top:1px solid var(--line);padding-top:16px;margin-top:22px;}
+.keybar .kt{color:#c7d2ea;font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;}
+.keybar .ki{display:block;color:#9aa7c4;font-size:13px;margin:5px 0;} .keybar .ki b{color:#fff;}
+.keybar .gk{color:var(--grn);font-weight:900;} .keybar .rk{color:var(--red);font-weight:900;} .keybar .yk{color:var(--amb);font-weight:900;}
+.betnow{margin-top:20px;} .betnow .bn-t{font-size:17px;font-weight:900;color:#fff;margin-bottom:10px;}
+.betnow .bn-books{display:flex;gap:10px;flex-wrap:wrap;}
+.betnow .bn{padding:12px 22px;border-radius:12px;font-weight:900;font-size:13.5px;text-decoration:none;letter-spacing:.2px;transition:.15s;}
+.betnow .bn:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(0,0,0,.4);}
+.betnow .bn.dk{background:#53d337;color:#04210a;} .betnow .bn.fd{background:#1493ff;color:#fff;}
+.betnow .bn.bo{background:#e8342e;color:#fff;} .betnow .bn.cb{background:#0052ff;color:#fff;}
+.disc{color:#5b688a;font-size:11px;margin-top:16px;}
 .game.aplus{border-left-color:var(--cyan);} .game.avoid{border-left-color:#39415a;opacity:.82;}
 .eplus{color:var(--grn);font-weight:800;} .eminus{color:var(--red);font-weight:800;}
 /* results table */
@@ -341,6 +344,22 @@ def play_call(edge, side, open_t, now_t):
     if tier=="LEAN":   return "LEAN", move
     return "NONE", move
 
+def render_footer():
+    st.markdown('''<div class="keybar"><div class="kt">📖 Quick key</div>
+      <span class="ki"><b>★</b> — our strongest picks (bet these)</span>
+      <span class="ki"><span class="gk">✓</span> — the betting market is moving toward our pick (good sign)</span>
+      <span class="ki"><span class="rk">⚠</span> — the market is moving away from our pick (be careful)</span>
+      <span class="ki"><b>Open → Now → Proj</b> — where the line opened, where it is now, and what we predict the total will be</span>
+      <span class="ki"><b>Edge</b> — how many points we disagree with the betting line (bigger = stronger pick)</span></div>''',
+      unsafe_allow_html=True)
+    st.markdown('''<div class="betnow"><div class="bn-t">🎰 Bet Now</div><div class="bn-books">
+      <a class="bn dk" href="https://sportsbook.draftkings.com/leagues/football/college-football" target="_blank" rel="noopener">DraftKings</a>
+      <a class="bn fd" href="https://sportsbook.fanduel.com/navigation/ncaaf" target="_blank" rel="noopener">FanDuel</a>
+      <a class="bn bo" href="https://www.betonline.ag/sportsbook/football/ncaa" target="_blank" rel="noopener">BetOnline</a>
+      <a class="bn cb" href="https://www.coinbase.com/prediction-markets" target="_blank" rel="noopener">Coinbase</a></div></div>''',
+      unsafe_allow_html=True)
+    st.markdown('<div class="disc">21+. For entertainment only — not betting advice. Please gamble responsibly.</div>',unsafe_allow_html=True)
+
 # ============================= BOARD =============================
 def render_board():
     bankroll_card(track, compact=True)
@@ -406,20 +425,7 @@ def render_board():
             for r in view[view.day==day].itertuples():
                 dh=detail_html(r, meta.get("season",2026), rwk)
                 st.markdown(f'<details class="gc"><summary>{row(r)}</summary>{dh}</details>',unsafe_allow_html=True)
-                if r.home=="LSU" and r.away=="Clemson":   # --- one-tap bet POC (this game only) ---
-                    st.markdown(
-                      '<details class="betw"><summary>🎰 Bet UNDER 49.5 &nbsp;▾ <span class="conf">✓ market moved to your side</span></summary>'
-                      '<div class="books">'
-                      '<a class="bk dk" href="https://sportsbook.draftkings.com/?outcomes=0OU84376928U4950_3" target="_blank" rel="noopener">DraftKings ↗</a>'
-                      '<a class="bk fd" href="https://sportsbook.fanduel.com/addToBetslip?marketId=42.551699236&selectionId=7017917" target="_blank" rel="noopener">FanDuel ↗</a>'
-                      '</div>'
-                      '<div class="alt">Prefer the over? <a href="https://sportsbook.draftkings.com/?outcomes=0OU84376928O4950_1" target="_blank" rel="noopener">DraftKings</a> · '
-                      '<a href="https://sportsbook.fanduel.com/addToBetslip?marketId=42.551699236&selectionId=7017916" target="_blank" rel="noopener">FanDuel</a></div></details>',
-                      unsafe_allow_html=True)
-    st.markdown('<div class="legend"><b>Open → Now → Proj</b>: opener → current line vs model projection. '
-      '<b>★</b> = strong play (edge ≥ 5). <b>✓</b> = market agrees (line has moved 1+ pt toward the model since the opener). '
-      '<b>mkt ✓ / ⚠</b> chip = points the line moved toward (✓) or against (⚠) the model. '
-      'Bet the ★ plays early into the opener; a ✓ is added confirmation, and a red ⚠ chip is a caution. Not betting advice.</div>',unsafe_allow_html=True)
+    render_footer()
 
 # ============================= TRACK RECORD =============================
 def render_track():
@@ -491,8 +497,9 @@ def render_track():
           f'<div class="res {r.result}">{r.result}</div>{mghtml}{clv}</div>')
     st.markdown("".join(html),unsafe_allow_html=True)
     if len(bets)>N: st.caption(f"Showing {N} of {len(bets)} bets (KPIs reflect all). Narrow the filters to see more.")
-    st.markdown('<div class="legend"><b>Leak-free walk-forward</b> 2019–2025: each game projected using only prior data, '
-      'graded vs the <b>opener</b> at edge ≥ 3. <b>CLV ✓</b> = the closing line moved toward our side (value captured). '
-      'Break-even at -110 is 52.4%. Past results, not a guarantee.</div>',unsafe_allow_html=True)
+    st.markdown('<div class="legend" style="margin-top:6px"><b>How to read this:</b> every past pick, scored win/loss vs the '
+      'opening line. <b>CLV</b> = did the line move our way after we picked (a sign we were early &amp; right). '
+      'Past results, not a guarantee.</div>',unsafe_allow_html=True)
+    render_footer()
 
 render_board() if nav.startswith("📋") else render_track()
