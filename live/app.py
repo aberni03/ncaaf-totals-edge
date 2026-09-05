@@ -217,7 +217,7 @@ def bankroll_settings():
         cC,cD=st.columns(2)
         with cC: st.selectbox("Side",["Both","Overs only","Unders only"],key="bk_side")
         with cD: st.selectbox("CLV",["All CLV","CLV+ (market agreed)","CLV− (market faded)"],key="bk_clv")
-        st.button("↺  Reset to defaults", use_container_width=True, on_click=_reset_bk)
+        st.button("↺  Reset to defaults", use_container_width=True, on_click=_reset_bk, key="bk_reset")
 
 def _bk_compute(track):
     basis,unit,start,scope,side,clv=_read_bk()
@@ -446,8 +446,8 @@ def render_track():
             st.selectbox("Result",["All","Wins","Losses"],key="tr_result")
             st.selectbox("Side",["Both","Overs only","Unders only"],key="tr_side")
             st.selectbox("CLV",["All CLV","CLV+ (market agreed)","CLV− (market faded)"],key="tr_clv")
-            st.button("↺  Reset to defaults", use_container_width=True, on_click=_reset_tr)
-            if st.button("↻  Re-grade record", use_container_width=True, help="Recompute the record from data already on the server (e.g. after a model tweak). To pull NEW game results first, use 🔃 Update week results on the board."):
+            st.button("↺  Reset to defaults", use_container_width=True, on_click=_reset_tr, key="tr_reset")
+            if st.button("↻  Re-grade record", use_container_width=True, key="tr_regrade", help="Recompute the record from data already on the server (e.g. after a model tweak). To pull NEW game results first, use 🔃 Update week results on the board."):
                 run_job("build_track_record.py","Re-grading track record")
     if res=="Wins": bets=bets[bets.result=="WIN"]
     elif res=="Losses": bets=bets[bets.result=="LOSS"]
