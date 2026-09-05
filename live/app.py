@@ -195,7 +195,7 @@ def sparkline(vals, w=560, h=96, color="#19e59b", base=None):
       f'<polyline points="{pts}" fill="none" stroke="{color}" stroke-width="2.2" stroke-linejoin="round"/>'
       f'<circle cx="{ex:.1f}" cy="{ey:.1f}" r="3.5" fill="{color}"/></svg>')
 
-BK_DEFAULTS={"bk_basis":"Strong bets (≥5)","bk_unit":100,"bk_start":10000,"bk_scope":"All history (2020→)","bk_side":"Both","bk_clv":"All CLV"}
+BK_DEFAULTS={"bk_basis":"All bets (≥3)","bk_unit":100,"bk_start":10000,"bk_scope":"All history (2020→)","bk_side":"Both","bk_clv":"All CLV"}
 def _read_bk(): return tuple(st.session_state.get(k,v) for k,v in BK_DEFAULTS.items())
 
 def bankroll_settings():
@@ -226,13 +226,14 @@ def _bk_compute(track):
     curve=(start+pnl.cumsum()).tolist(); bal=curve[-1]; net=bal-start
     dec=b[b.result!="PUSH"]; w=int((dec.result=="WIN").sum()); l=int((dec.result=="LOSS").sum()); p=int((b.result=="PUSH").sum())
     roi=net/(len(dec)*unit)*100 if len(dec) else 0
+    winp=w/(w+l)*100 if (w+l) else 0
     seq=list(dec.result)[::-1]; r0=seq[0] if seq else None; stk=0
     for x in seq:
         if x==r0: stk+=1
         else: break
     streak=f'🔥 W{stk}' if r0=="WIN" else (f'🧊 L{stk}' if r0=="LOSS" else "—")
     l10=list(dec.result)[-10:]
-    return dict(basis=basis,unit=unit,start=start,curve=curve,bal=bal,net=net,roi=roi,
+    return dict(basis=basis,unit=unit,start=start,curve=curve,bal=bal,net=net,roi=roi,winp=winp,
                 w=w,l=l,p=p,streak=streak,scls="hot" if r0=="WIN" else "cold",
                 l10w=l10.count("WIN"),l10n=len(l10),nbets=len(dec))
 
@@ -248,13 +249,13 @@ def bankroll_card(track, compact=False):
         st.markdown(f'''<div class="bank compact"><div class="lft">
           <div class="sub">MODEL BANKROLL · {d["basis"].split(" ")[0].lower()}</div>
           <div class="bal {gcls}">${d["bal"]:,.0f}</div>
-          <div class="sub">net {netstr} · {d["roi"]:+.1f}% · {d["nbets"]} bets</div></div>
+          <div class="sub">net {netstr} · {d["winp"]:.0f}% win · {d["roi"]:+.1f}% · {d["nbets"]} bets</div></div>
           <div class="rgt">{sparkline(d["curve"],h=62,color=color,base=d["start"])}</div></div>''',unsafe_allow_html=True)
     else:
         st.markdown(f'''<div class="bank"><div class="lft">
           <div class="sub">MODEL BANKROLL · {d["basis"].split(" ")[0].lower()} plays · ${d["unit"]:,}/bet</div>
           <div class="bal {gcls}">${d["bal"]:,.0f}</div>
-          <div class="sub">net {netstr} · ROI {d["roi"]:+.1f}% · {d["nbets"]} bets</div>
+          <div class="sub">net {netstr} · {d["winp"]:.1f}% win · ROI {d["roi"]:+.1f}% · {d["nbets"]} bets</div>
           <div class="chips"><span class="chip">{d["w"]}-{d["l"]}-{d["p"]}</span>
             <span class="chip streak {d["scls"]}">{d["streak"]}</span>
             <span class="chip">last 10 · {d["l10w"]}-{d["l10n"]-d["l10w"]}</span></div></div>
@@ -400,11 +401,14 @@ def render_track():
     bankroll_card(track, compact=False)
     seasons=["All"]+[str(s) for s in sorted(track.season.unique())]
     def_season=str(int(track.season.max())) if len(track) else "All"   # default to current season
-    g1,g2,g3,g4=st.columns([1,1.3,1.1,1.1])
+    g1,g2,g3=st.columns(3)
     with g1: seas=st.selectbox("Season",seasons,index=seasons.index(def_season) if def_season in seasons else 0)
     with g2: tier=st.selectbox("Bets",["All bets (≥3)","Strong only (≥5)","Leans only (3–5)"])
     with g3: res=st.selectbox("Result",["All","Wins","Losses"])
-    with g4:
+    h1,h2,h3=st.columns(3)
+    with h1: side_f=st.selectbox("Side",["Both","Overs only","Unders only"])
+    with h2: clv_f=st.selectbox("CLV",["All CLV","CLV+ (market agreed)","CLV− (market faded)"])
+    with h3:
         st.markdown("<div style='height:26px'></div>",unsafe_allow_html=True)
         if st.button("↻ Rebuild", use_container_width=True, help="Re-pull latest results + regrade the whole history."):
             run_job("build_track_record.py","Rebuilding track record")
@@ -413,6 +417,10 @@ def render_track():
     bets=d[d.rec.isin(["OVER","UNDER"])].copy()       # actual bets only (a play was recommended, edge>=3)
     if tier.startswith("Strong"): bets=bets[bets.tier=="STRONG"]
     elif tier.startswith("Leans"): bets=bets[bets.tier=="LEAN"]
+    if side_f=="Overs only": bets=bets[bets.rec=="OVER"]
+    elif side_f=="Unders only": bets=bets[bets.rec=="UNDER"]
+    if "agreed" in clv_f: bets=bets[bets.clv_pts>0]
+    elif "faded" in clv_f: bets=bets[bets.clv_pts<0]
     dec=bets[bets.result!="PUSH"]; w=int((dec.result=="WIN").sum()); l=int((dec.result=="LOSS").sum()); p=int((bets.result=="PUSH").sum())
     winp=w/(w+l)*100 if (w+l) else 0; roi=(w*0.9091-l)/(w+l)*100 if (w+l) else 0; units=w*0.9091-l
     clvp=(bets.clv=="+").mean()*100 if len(bets) else 0
