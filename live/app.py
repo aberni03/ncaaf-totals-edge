@@ -323,7 +323,7 @@ def render_board():
     weeks=sorted(slate.week.dropna().unique()); cur=meta.get("current_week", weeks[0] if weeks else 1)
     f1,f2,f3=st.columns([1,1.6,1.3])
     with f1: wk=st.selectbox("Week",weeks,index=weeks.index(cur) if cur in weeks else 0)
-    with f2: show=st.selectbox("Filter",["Bets: STRONG (edge ≥ 5)","Leans + bets (edge ≥ 3)","All games"])
+    with f2: show=st.selectbox("Filter",["Leans + bets (edge ≥ 3)","Bets: STRONG (edge ≥ 5)","All games"])
     with f3: side_f=st.selectbox("Side",["Both","Overs only","Unders only"])
     wkraw=slate[slate.week==wk].copy()
     played=int(wkraw.actual_total.notna().sum())
