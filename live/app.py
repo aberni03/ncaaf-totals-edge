@@ -40,6 +40,8 @@ CSS="""
 .bank .chips{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;}
 .bank .chip{background:#0e1830;border:1px solid #23345a;border-radius:20px;padding:5px 12px;font-size:12px;color:#c7d2ea;font-weight:800;}
 .bank .streak.hot{color:var(--amb);} .bank .streak.cold{color:var(--cyan);}
+.bank.compact{padding:12px 22px;grid-template-columns:minmax(180px,auto) 1fr;gap:20px;margin:2px 0 14px;}
+.bank.compact:before{display:none;} .bank.compact .bal{font-size:26px;}
 .kpi{background:linear-gradient(160deg,var(--card),var(--card2));border:1px solid var(--line);border-radius:16px;padding:15px 18px;}
 .kpi .n{font-size:26px;font-weight:900;color:var(--txt);line-height:1;} .kpi .n.g{color:var(--grn);} .kpi .n.r{color:var(--red);}
 .kpi .l{font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:1px;margin-top:6px;font-weight:600;}
@@ -102,6 +104,24 @@ div[role="radiogroup"]{gap:6px;} div[role="radiogroup"] label{background:var(--c
 .tc h4{margin:0 0 10px;color:#fff;font-size:15px;font-weight:800;} .tc h4 .mix{float:right;font-size:11px;color:var(--vio);font-weight:700;}
 .stat{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #182238;font-size:13px;}
 .stat:last-child{border:0;} .stat .k{color:var(--mut);} .stat .v{color:#dbe4f7;font-weight:700;}
+/* ===== MOBILE ONLY (<=680px) — desktop layout is untouched ===== */
+@media (max-width:680px){
+  .block-container{padding-left:.7rem;padding-right:.7rem;}
+  .hero h1{font-size:24px;} .hero{padding:16px 18px;}
+  .game{grid-template-columns:1fr auto;grid-template-areas:"match sig" "mv mv" "kick sp";gap:8px 10px;padding:12px 14px;}
+  .game .kick{grid-area:kick;text-align:left;}
+  .game .match{grid-area:match;}
+  .game .mv{grid-area:mv;justify-content:flex-start;gap:12px;}
+  .game .mv .step .v.proj{font-size:17px;}
+  .game .sp{grid-area:sp;text-align:right;}
+  .game .sig{grid-area:sig;justify-self:end;align-self:start;}
+  .tcards{grid-template-columns:1fr;}
+  .bank,.bank.compact{grid-template-columns:1fr;gap:12px;}
+  .bank .rgt{order:2;}
+  .thead,.trow{grid-template-columns:50px 1fr 42px 56px 52px;gap:6px;font-size:11px;padding-left:10px;padding-right:10px;}
+  .thead>div:nth-child(3),.thead>div:nth-child(7),.thead>div:nth-child(8),
+  .trow>*:nth-child(3),.trow>*:nth-child(7),.trow>*:nth-child(8){display:none;}
+}
 </style>
 """
 st.markdown(CSS, unsafe_allow_html=True)
@@ -170,22 +190,26 @@ def sparkline(vals, w=560, h=96, color="#19e59b", base=None):
       f'<polyline points="{pts}" fill="none" stroke="{color}" stroke-width="2.2" stroke-linejoin="round"/>'
       f'<circle cx="{ex:.1f}" cy="{ey:.1f}" r="3.5" fill="{color}"/></svg>')
 
-def render_bankroll(track):
-    if track is None or len(track)==0: return
+BK_DEFAULTS={"bk_basis":"Strong bets (≥5)","bk_unit":100,"bk_start":10000,"bk_scope":"All history (2020→)"}
+def _read_bk(): return tuple(st.session_state.get(k,v) for k,v in BK_DEFAULTS.items())
+
+def bankroll_settings():
+    for k,v in BK_DEFAULTS.items(): st.session_state.setdefault(k,v)
     with st.popover("💰 Bankroll settings"):
-        basis=st.selectbox("Stake on",["Strong bets (≥5)","All bets (≥3)"])
+        st.selectbox("Stake on",["Strong bets (≥5)","All bets (≥3)"],key="bk_basis")
         cA,cB=st.columns(2)
-        unit=cA.number_input("$ per bet (flat)",10,100000,100,step=10)
-        start=cB.number_input("Starting bankroll $",0,10000000,10000,step=500)
-        scope=st.selectbox("Span",["All history (2020→)","2026 season only"])
+        cA.number_input("$ per bet (flat)",min_value=10,max_value=100000,step=10,key="bk_unit")
+        cB.number_input("Starting bankroll $",min_value=0,max_value=10000000,step=500,key="bk_start")
+        st.selectbox("Span",["All history (2020→)","2026 season only"],key="bk_scope")
+
+def _bk_compute(track):
+    basis,unit,start,scope=_read_bk()
     b=track[track.rec.isin(["OVER","UNDER"])].copy()
     if basis.startswith("Strong"): b=b[b.tier=="STRONG"]
     if scope.startswith("2026"): b=b[b.season==2026]
     b["_dt"]=pd.to_datetime(b.date,format="%m/%d/%y",errors="coerce")
     b=b.sort_values(["season","_dt","week"])
-    if len(b)==0:
-        st.markdown('<div class="bank"><div class="lft"><div class="sub">MODEL BANKROLL</div>'
-                    '<div class="bal">—</div><div class="sub">no bets in this span yet</div></div><div class="rgt"></div></div>',unsafe_allow_html=True); return
+    if len(b)==0: return None
     pnl=b.result.map({"WIN":0.9091,"LOSS":-1.0,"PUSH":0.0}).fillna(0)*unit
     curve=(start+pnl.cumsum()).tolist(); bal=curve[-1]; net=bal-start
     dec=b[b.result!="PUSH"]; w=int((dec.result=="WIN").sum()); l=int((dec.result=="LOSS").sum()); p=int((b.result=="PUSH").sum())
@@ -195,17 +219,34 @@ def render_bankroll(track):
         if x==r0: stk+=1
         else: break
     streak=f'🔥 W{stk}' if r0=="WIN" else (f'🧊 L{stk}' if r0=="LOSS" else "—")
-    scls="hot" if r0=="WIN" else "cold"
-    l10=list(dec.result)[-10:]; l10w=l10.count("WIN")
-    color="#19e59b" if net>=0 else "#ff4d73"; gcls="g" if net>=0 else "r"; ncol="#19e59b" if net>=0 else "#ff4d73"
-    st.markdown(f'''<div class="bank"><div class="lft">
-      <div class="sub">MODEL BANKROLL · {basis.split(" ")[0].lower()} plays · ${unit:,}/bet</div>
-      <div class="bal {gcls}">${bal:,.0f}</div>
-      <div class="sub">net <b style="color:{ncol}">{"+" if net>=0 else "−"}${abs(net):,.0f}</b> · ROI {roi:+.1f}% · {len(dec)} bets</div>
-      <div class="chips"><span class="chip">{w}-{l}-{p}</span>
-        <span class="chip streak {scls}">{streak}</span>
-        <span class="chip">last 10 · {l10w}-{len(l10)-l10w}</span></div></div>
-      <div class="rgt">{sparkline(curve,color=color,base=start)}</div></div>''',unsafe_allow_html=True)
+    l10=list(dec.result)[-10:]
+    return dict(basis=basis,unit=unit,start=start,curve=curve,bal=bal,net=net,roi=roi,
+                w=w,l=l,p=p,streak=streak,scls="hot" if r0=="WIN" else "cold",
+                l10w=l10.count("WIN"),l10n=len(l10),nbets=len(dec))
+
+def bankroll_card(track, compact=False):
+    if track is None or len(track)==0: return
+    d=_bk_compute(track)
+    if d is None:
+        if not compact: st.markdown('<div class="bank"><div class="lft"><div class="sub">MODEL BANKROLL</div><div class="bal">—</div><div class="sub">no bets in this span yet</div></div><div class="rgt"></div></div>',unsafe_allow_html=True)
+        return
+    net=d["net"]; color="#19e59b" if net>=0 else "#ff4d73"; gcls="g" if net>=0 else "r"
+    netstr=f'<b style="color:{color}">{"+" if net>=0 else "−"}${abs(net):,.0f}</b>'
+    if compact:
+        st.markdown(f'''<div class="bank compact"><div class="lft">
+          <div class="sub">MODEL BANKROLL · {d["basis"].split(" ")[0].lower()}</div>
+          <div class="bal {gcls}">${d["bal"]:,.0f}</div>
+          <div class="sub">net {netstr} · {d["roi"]:+.1f}% · {d["nbets"]} bets</div></div>
+          <div class="rgt">{sparkline(d["curve"],h=62,color=color,base=d["start"])}</div></div>''',unsafe_allow_html=True)
+    else:
+        st.markdown(f'''<div class="bank"><div class="lft">
+          <div class="sub">MODEL BANKROLL · {d["basis"].split(" ")[0].lower()} plays · ${d["unit"]:,}/bet</div>
+          <div class="bal {gcls}">${d["bal"]:,.0f}</div>
+          <div class="sub">net {netstr} · ROI {d["roi"]:+.1f}% · {d["nbets"]} bets</div>
+          <div class="chips"><span class="chip">{d["w"]}-{d["l"]}-{d["p"]}</span>
+            <span class="chip streak {d["scls"]}">{d["streak"]}</span>
+            <span class="chip">last 10 · {d["l10w"]}-{d["l10n"]-d["l10w"]}</span></div></div>
+          <div class="rgt">{sparkline(d["curve"],color=color,base=d["start"])}</div></div>''',unsafe_allow_html=True)
 
 @st.cache_data(ttl=600)
 def ratings_for(season, week):
@@ -253,7 +294,7 @@ def team_card(name, rt, feat, side):
 
 # ============================= BOARD =============================
 def render_board():
-    render_bankroll(track)
+    bankroll_card(track, compact=True)
     if slate is None or len(slate)==0:
         st.warning("No slate yet — run:  python3 live/project_slate.py"); return
     weeks=sorted(slate.week.dropna().unique()); cur=meta.get("current_week", weeks[0] if weeks else 1)
@@ -314,6 +355,8 @@ def render_board():
 def render_track():
     if track is None or len(track)==0:
         st.warning("No track record yet — run:  python3 live/build_track_record.py"); return
+    bankroll_settings()
+    bankroll_card(track, compact=False)
     seasons=["All"]+[str(s) for s in sorted(track.season.unique())]
     def_season=str(int(track.season.max())) if len(track) else "All"   # default to current season
     g1,g2,g3,g4=st.columns([1,1.3,1.1,1.1])
