@@ -195,7 +195,7 @@ def sparkline(vals, w=560, h=96, color="#19e59b", base=None):
       f'<polyline points="{pts}" fill="none" stroke="{color}" stroke-width="2.2" stroke-linejoin="round"/>'
       f'<circle cx="{ex:.1f}" cy="{ey:.1f}" r="3.5" fill="{color}"/></svg>')
 
-BK_DEFAULTS={"bk_basis":"Strong bets (≥5)","bk_unit":100,"bk_start":10000,"bk_scope":"All history (2020→)"}
+BK_DEFAULTS={"bk_basis":"Strong bets (≥5)","bk_unit":100,"bk_start":10000,"bk_scope":"All history (2020→)","bk_side":"Both","bk_clv":"All CLV"}
 def _read_bk(): return tuple(st.session_state.get(k,v) for k,v in BK_DEFAULTS.items())
 
 def bankroll_settings():
@@ -206,12 +206,19 @@ def bankroll_settings():
         cA.number_input("$ per bet (flat)",min_value=10,max_value=100000,step=10,key="bk_unit")
         cB.number_input("Starting bankroll $",min_value=0,max_value=10000000,step=500,key="bk_start")
         st.selectbox("Span",["All history (2020→)","2026 season only"],key="bk_scope")
+        cC,cD=st.columns(2)
+        with cC: st.selectbox("Side",["Both","Overs only","Unders only"],key="bk_side")
+        with cD: st.selectbox("CLV",["All CLV","CLV+ (market agreed)","CLV− (market faded)"],key="bk_clv")
 
 def _bk_compute(track):
-    basis,unit,start,scope=_read_bk()
+    basis,unit,start,scope,side,clv=_read_bk()
     b=track[track.rec.isin(["OVER","UNDER"])].copy()
     if basis.startswith("Strong"): b=b[b.tier=="STRONG"]
     if scope.startswith("2026"): b=b[b.season==2026]
+    if side=="Overs only": b=b[b.rec=="OVER"]
+    elif side=="Unders only": b=b[b.rec=="UNDER"]
+    if "agreed" in clv: b=b[b.clv_pts>0]          # positive CLV = close moved toward the model
+    elif "faded" in clv: b=b[b.clv_pts<0]
     b["_dt"]=pd.to_datetime(b.date,format="%m/%d/%y",errors="coerce")
     b=b.sort_values(["season","_dt","week"])
     if len(b)==0: return None
