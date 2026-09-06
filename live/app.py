@@ -46,6 +46,9 @@ CSS="""
 .bank.compact{padding:12px 22px;grid-template-columns:minmax(180px,auto) 1fr;gap:20px;margin:2px 0 14px;}
 .bank.compact:before{display:none;} .bank.compact .bal{font-size:26px;}
 .bank-hdr{color:var(--mut);font-size:12px;letter-spacing:.4px;font-weight:600;padding-top:6px;} .bank-hdr .spanlbl{color:#c7d2ea;}
+div[data-testid="stVerticalBlockBorderWrapper"]{background:linear-gradient(120deg,#122748,#0b1424);border:1px solid #24365d!important;border-radius:18px;padding:12px 20px 8px!important;margin:2px 0 14px;position:relative;overflow:hidden;}
+.bank.flat{background:none!important;border:0!important;border-radius:0!important;padding:0!important;margin:0!important;} .bank.flat:before{display:none;}
+div[data-testid="stPopover"] button{padding:2px 9px!important;min-height:0!important;font-size:14px!important;}
 .wkrec{border-radius:12px;padding:10px 16px;margin:2px 0 4px;font-size:14px;font-weight:700;text-align:center;}
 .wkrec.win{background:linear-gradient(90deg,rgba(25,229,155,.20),rgba(56,214,255,.08));border:1px solid #1f7a5a;color:#d6f7ec;}
 .wkrec.loss{background:rgba(255,77,115,.12);border:1px solid #5c2130;color:#f3c0cc;}
@@ -246,12 +249,13 @@ def _reset_tr():
 def bankroll_settings():
     for k,v in BK_DEFAULTS.items(): st.session_state.setdefault(k,v)
     wkopts=["All weeks"]+[str(int(w)) for w in sorted(track.week.dropna().unique())] if (track is not None and len(track)) else ["All weeks"]
-    with st.popover("⚙️ Settings"):
+    with st.popover("⚙️", help="Bankroll settings"):
         st.markdown("**Model bankroll settings**")
         st.selectbox("Stake on",["Strong Edge (≥5)","All bets (≥3)"],key="bk_basis")
         cA,cB=st.columns(2)
         cA.number_input("$ per bet (flat)",min_value=10,max_value=100000,step=10,key="bk_unit")
         cB.number_input("Starting bankroll $",min_value=0,max_value=10000000,step=500,key="bk_start")
+        st.caption(f"Stake **${int(st.session_state.bk_unit):,}**/bet · Starting bankroll **${int(st.session_state.bk_start):,}**")
         cE,cF=st.columns(2)
         with cE: st.selectbox("Span",["All time","2026 season only"],key="bk_scope")
         with cF: st.selectbox("Week",wkopts,key="bk_week")
@@ -264,6 +268,7 @@ def _bk_compute(track):
     basis,unit,start,scope,side,clv,week=_read_bk()
     b=track[track.rec.isin(["OVER","UNDER"])].copy()
     if basis.startswith("Strong"): b=b[b.tier=="STRONG"]
+    else: b=b[b.tier.isin(["STRONG","LEAN"])]          # "All bets (≥3)" = real plays only (drop edge<3 no-plays)
     if scope.startswith("2026"): b=b[b.season==2026]
     if week!="All weeks":
         try: b=b[b.week==int(week)]
@@ -286,27 +291,32 @@ def _bk_compute(track):
         else: break
     streak=f'🔥 W{stk}' if r0=="WIN" else (f'🧊 L{stk}' if r0=="LOSS" else "—")
     l10=list(dec.result)[-10:]
-    chart_df=pd.DataFrame({"idx":range(1,len(b)+1),"Balance":cum.values,"Net":cum.values-start,
-        "date":b.date.values,"game":(b.away.astype(str)+" @ "+b.home.astype(str)).values,"result":b.result.values})
+    chart_df=pd.DataFrame({"idx":range(1,len(b)+1),"dt":b["_dt"].values,"Balance":cum.values,"Net":cum.values-start})
     return dict(basis=basis,unit=unit,start=start,scope=scope,week=week,curve=curve,bal=bal,net=net,roi=roi,winp=winp,
                 w=w,l=l,p=p,streak=streak,scls="hot" if r0=="WIN" else "cold",
                 l10w=l10.count("WIN"),l10n=len(l10),nbets=len(dec),chart_df=chart_df)
 
 def equity_chart(cdf, color, start):
     hover=alt.selection_point(fields=["idx"],nearest=True,on="mouseover",empty=False)
-    xs=alt.X("idx:Q",axis=None)
-    ys=alt.Y("Balance:Q",scale=alt.Scale(zero=False),
-        axis=alt.Axis(title=None,format="$,.0f",tickCount=3,grid=True,gridColor="#1e2c47",domain=False,
-                      labelColor="#7e8db0",labelFontSize=10,tickColor="#1e2c47"))
+    oneyr=cdf["dt"].notna().any() and (cdf["dt"].max()-cdf["dt"].min()).days<300
+    xs=alt.X("dt:T",axis=alt.Axis(title=None,format=("%b" if oneyr else "%Y"),
+        tickCount=({"interval":"month","step":1} if oneyr else {"interval":"year","step":1}),
+        grid=False,domain=False,labelColor="#7e8db0",labelFontSize=10,tickColor="#1e2c47",labelPadding=2))
+    order=alt.Order("idx:Q")
+    ys=alt.Y("Balance:Q",scale=alt.Scale(zero=False,nice=True),
+        axis=alt.Axis(title=None,format="$,.0f",tickCount=4,grid=True,gridColor="#1e2c47",domain=False,
+                      labelColor="#7e8db0",labelFontSize=10,tickColor="#1e2c47",labelPadding=4))
     area=alt.Chart(cdf).mark_area(interpolate="monotone",line={"color":color,"strokeWidth":2.5},
         color=alt.Gradient(gradient="linear",x1=1,x2=1,y1=0,y2=1,
-            stops=[alt.GradientStop(color=color,offset=0),alt.GradientStop(color="#0b1020",offset=1)])).encode(x=xs,y=ys)
+            stops=[alt.GradientStop(color=color,offset=0),alt.GradientStop(color="#0b1020",offset=1)])).encode(x=xs,y=ys,order=order)
     base=alt.Chart(pd.DataFrame({"y":[start]})).mark_rule(color="#33415f",strokeDash=[4,4]).encode(y="y:Q")
     vr=alt.Chart(cdf).mark_rule(color="#4a5a7f").encode(x=xs,opacity=alt.condition(hover,alt.value(0.7),alt.value(0)))
     pts=alt.Chart(cdf).mark_circle(color=color).encode(x=xs,y=ys,
         opacity=alt.condition(hover,alt.value(1),alt.value(0)),size=alt.condition(hover,alt.value(80),alt.value(0)),
         tooltip=[alt.Tooltip("Balance:Q",title="Bankroll",format="$,.0f"),alt.Tooltip("Net:Q",title="Net P&L",format="+$,.0f")]).add_params(hover)
-    return (area+base+vr+pts).properties(height=175,background="transparent").configure_view(strokeWidth=0)
+    return (area+base+vr+pts).properties(height=178,background="transparent",
+        padding={"left":10,"right":12,"top":10,"bottom":4},
+        autosize=alt.AutoSizeParams(type="fit",contains="padding")).configure_view(strokeWidth=0)
 
 def bankroll_card(track, compact=False):
     if track is None or len(track)==0: return
@@ -336,30 +346,31 @@ def bankroll_card(track, compact=False):
 def bankroll_block(compact=False):
     if track is None or len(track)==0: return
     d=_bk_compute(track)
-    hl,hr=st.columns([5,1])
-    with hr: bankroll_settings()          # ⚙️ settings inline in the header — on BOTH pages
-    if d is None:
-        with hl: st.markdown('<div class="bank-hdr">MODEL BANKROLL — no bets match these settings</div>',unsafe_allow_html=True)
-        return
-    span=("All-Time" if d["scope"].startswith("All") else "2026 season")+("" if d["week"]=="All weeks" else f" · Wk {d['week']}")
-    with hl: st.markdown(f'<div class="bank-hdr">MODEL BANKROLL · <b class="spanlbl">{span}</b> · ${d["unit"]:,}/bet</div>',unsafe_allow_html=True)
-    net=d["net"]; color="#19e59b" if net>=0 else "#ff4d73"; gcls="g" if net>=0 else "r"
-    netstr=f'<b style="color:{color}">{"+" if net>=0 else "−"}${abs(net):,.0f}</b>'
-    if compact:
-        stats=(f'<div class="lft"><div class="bal {gcls}">${d["bal"]:,.0f}</div>'
-          f'<div class="sub">net {netstr} · {d["winp"]:.0f}% win · {d["roi"]:+.1f}% · {d["nbets"]:,} bets</div></div>')
-        st.markdown(f'<div class="bank compact">{stats}<div class="rgt">{sparkline(d["curve"],h=62,color=color,base=d["start"])}</div></div>',unsafe_allow_html=True)
-    else:
-        stats=(f'<div class="lft"><div class="bal {gcls}">${d["bal"]:,.0f}</div>'
-          f'<div class="sub">net {netstr} · {d["winp"]:.1f}% win · ROI {d["roi"]:+.1f}% · {d["nbets"]:,} bets</div>'
-          f'<div class="chips"><span class="chip">{d["w"]:,}-{d["l"]:,}-{d["p"]:,}</span>'
-          f'<span class="chip streak {d["scls"]}">{d["streak"]}</span>'
-          f'<span class="chip">last 10 · {d["l10w"]}-{d["l10n"]-d["l10w"]}</span></div></div>')
-        c1,c2=st.columns([2,3])
-        with c1: st.markdown(f'<div class="bank" style="grid-template-columns:1fr;margin:2px 0;height:100%">{stats}</div>',unsafe_allow_html=True)
-        with c2:
-            try: st.altair_chart(equity_chart(d["chart_df"],color,d["start"]),use_container_width=True,theme=None)
-            except Exception: st.markdown(f'<div class="bank" style="grid-template-columns:1fr">{sparkline(d["curve"],color=color,base=d["start"])}</div>',unsafe_allow_html=True)
+    with st.container(border=True):                # the widget box — label + ⚙️ live INSIDE it
+        hl,hr=st.columns([6,1])
+        with hr: bankroll_settings()               # ⚙️ settings inside the widget, top-right
+        if d is None:
+            with hl: st.markdown('<div class="bank-hdr">MODEL BANKROLL — no bets match these settings</div>',unsafe_allow_html=True)
+            return
+        span=("All-Time" if d["scope"].startswith("All") else "2026 season")+("" if d["week"]=="All weeks" else f" · Wk {d['week']}")
+        with hl: st.markdown(f'<div class="bank-hdr">MODEL BANKROLL · <b class="spanlbl">{span}</b> · ${d["unit"]:,}/bet</div>',unsafe_allow_html=True)
+        net=d["net"]; color="#19e59b" if net>=0 else "#ff4d73"; gcls="g" if net>=0 else "r"
+        netstr=f'<b style="color:{color}">{"+" if net>=0 else "−"}${abs(net):,.0f}</b>'
+        if compact:
+            stats=(f'<div class="lft"><div class="bal {gcls}">${d["bal"]:,.0f}</div>'
+              f'<div class="sub">net {netstr} · {d["winp"]:.0f}% win · {d["roi"]:+.1f}% · {d["nbets"]:,} bets</div></div>')
+            st.markdown(f'<div class="bank compact flat">{stats}<div class="rgt">{sparkline(d["curve"],h=62,color=color,base=d["start"])}</div></div>',unsafe_allow_html=True)
+        else:
+            stats=(f'<div class="lft"><div class="bal {gcls}">${d["bal"]:,.0f}</div>'
+              f'<div class="sub">net {netstr} · {d["winp"]:.1f}% win · ROI {d["roi"]:+.1f}% · {d["nbets"]:,} bets</div>'
+              f'<div class="chips"><span class="chip">{d["w"]:,}-{d["l"]:,}-{d["p"]:,}</span>'
+              f'<span class="chip streak {d["scls"]}">{d["streak"]}</span>'
+              f'<span class="chip">last 10 · {d["l10w"]}-{d["l10n"]-d["l10w"]}</span></div></div>')
+            c1,c2=st.columns([2,3])
+            with c1: st.markdown(f'<div class="bank flat" style="grid-template-columns:1fr;height:100%">{stats}</div>',unsafe_allow_html=True)
+            with c2:
+                try: st.altair_chart(equity_chart(d["chart_df"],color,d["start"]),use_container_width=True,theme=None)
+                except Exception: st.markdown(f'<div class="bank flat" style="grid-template-columns:1fr">{sparkline(d["curve"],color=color,base=d["start"])}</div>',unsafe_allow_html=True)
 
 @st.cache_data(ttl=600)
 def ratings_for(season, week):
@@ -468,7 +479,7 @@ def render_board():
     weeks=sorted(slate.week.dropna().unique()); cur=meta.get("current_week", weeks[0] if weeks else 1)
     cc=st.columns([1,2,1.5])
     with cc[0]: wk=st.selectbox("Week",weeks,index=weeks.index(cur) if cur in weeks else 0)
-    with cc[1]: subset=st.pills("Show",["All games","Edge","Strong Edge ★"],selection_mode="multi",default=["All games"],key="bd_subset")
+    with cc[1]: subset=st.pills("Show (none = all games)",["Edge","Strong Edge ★"],selection_mode="multi",default=[],key="bd_subset")
     with cc[2]: side_sel=st.pills("Side",["Both","Overs","Unders"],default="Both",key="bd_side")
     # ---- build the board ----
     now=datetime.now(timezone.utc)
@@ -563,6 +574,7 @@ def render_track():
     bets=d[d.rec.isin(["OVER","UNDER"])].copy()       # actual bets only (a play was recommended, edge>=3)
     if tier.startswith("Strong"): bets=bets[bets.tier=="STRONG"]
     elif tier.startswith("Edge"): bets=bets[bets.tier=="LEAN"]
+    else: bets=bets[bets.tier.isin(["STRONG","LEAN"])]   # "All bets (≥3)" = graded plays only (no edge<3 no-plays)
     if side_f=="Overs only": bets=bets[bets.rec=="OVER"]
     elif side_f=="Unders only": bets=bets[bets.rec=="UNDER"]
     if "agreed" in clv_f: bets=bets[bets.clv_pts>0]
