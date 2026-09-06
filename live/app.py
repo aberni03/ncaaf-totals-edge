@@ -51,9 +51,10 @@ div[data-testid="stVerticalBlockBorderWrapper"]{background:linear-gradient(120de
 div[data-testid="stPopover"] button{padding:2px 9px!important;min-height:0!important;font-size:14px!important;}
 div[data-testid="stVerticalBlockBorderWrapper"] div[data-testid="stPopover"]{display:flex;justify-content:flex-end;}
 /* clickable KPI cards (board): keep the pretty card, overlay a transparent full-size button */
-div[data-testid="stColumn"]:has([class*="st-key-kpi_"]),div[data-testid="column"]:has([class*="st-key-kpi_"]){position:relative;}
-[class*="st-key-kpi_"]{position:absolute;inset:0;z-index:4;margin:0!important;}
-[class*="st-key-kpi_"] button{width:100%;height:100%;min-height:100%;opacity:0;cursor:pointer;padding:0!important;border:0!important;}
+div[data-testid="stColumn"],div[data-testid="column"]{position:relative;}
+[class*="st-key-kpi_"]{position:absolute!important;inset:0;z-index:6;margin:0!important;padding:0!important;height:100%;}
+[class*="st-key-kpi_"]>div,[class*="st-key-kpi_"] [data-testid="stButton"],[class*="st-key-kpi_"] .stButton{height:100%!important;}
+[class*="st-key-kpi_"] button{width:100%!important;height:100%!important;min-height:100%!important;opacity:0;cursor:pointer;padding:0!important;border:0!important;box-shadow:none!important;}
 div[data-testid="stColumn"]:has([class*="st-key-kpi_"]):hover .kpi,div[data-testid="column"]:has([class*="st-key-kpi_"]):hover .kpi{border-color:#3a5488;}
 .kpi{cursor:pointer;} .kpi.sel{border-color:#19e59b!important;box-shadow:0 0 0 1px rgba(25,229,155,.35) inset;}
 .wkrec{border-radius:12px;padding:10px 16px;margin:2px 0 4px;font-size:14px;font-weight:700;text-align:center;}
