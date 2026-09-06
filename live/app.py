@@ -49,6 +49,7 @@ CSS="""
 div[data-testid="stVerticalBlockBorderWrapper"]{background:linear-gradient(120deg,#122748,#0b1424);border:1px solid #24365d!important;border-radius:18px;padding:12px 20px 8px!important;margin:2px 0 14px;position:relative;}
 .bank.flat{background:none!important;border:0!important;border-radius:0!important;padding:0!important;margin:0!important;} .bank.flat:before{display:none;}
 div[data-testid="stPopover"] button{padding:2px 9px!important;min-height:0!important;font-size:14px!important;}
+div[data-testid="stVerticalBlockBorderWrapper"] div[data-testid="stPopover"]{display:flex;justify-content:flex-end;}
 .wkrec{border-radius:12px;padding:10px 16px;margin:2px 0 4px;font-size:14px;font-weight:700;text-align:center;}
 .wkrec.win{background:linear-gradient(90deg,rgba(25,229,155,.20),rgba(56,214,255,.08));border:1px solid #1f7a5a;color:#d6f7ec;}
 .wkrec.loss{background:rgba(255,77,115,.12);border:1px solid #5c2130;color:#f3c0cc;}
@@ -308,10 +309,14 @@ def _bk_compute(track):
                 l10w=l10.count("WIN"),l10n=len(l10),nbets=len(dec),chart_df=chart_df)
 
 def equity_chart(cdf, color, start):
-    # static curve only — no interactive hover layer (it choked the browser). ~200 downsampled points.
-    oneyr=cdf["dt"].notna().any() and (cdf["dt"].max()-cdf["dt"].min()).days<300
-    xs=alt.X("dt:T",axis=alt.Axis(title=None,format=("%b" if oneyr else "%Y"),
-        tickCount=({"interval":"month","step":1} if oneyr else {"interval":"year","step":1}),
+    # even-spaced cumulative bankroll line (x = bet sequence) with year labels at season boundaries.
+    # NOTE: x must be the bet index, NOT the date — many bets share a date and a temporal x collapses
+    # them into vertical spikes instead of the smooth cumulative curve.
+    c=cdf.copy(); c["yr"]=pd.to_datetime(c["dt"]).dt.year
+    firsts=c.dropna(subset=["yr"]).groupby("yr")["idx"].min()
+    pairs=sorted((int(i),int(y)) for y,i in firsts.items())
+    vals=[i for i,_ in pairs]; expr="".join(f"datum.value==={i}?'{y}':" for i,y in pairs)+"''"
+    xs=alt.X("idx:Q",scale=alt.Scale(nice=False),axis=alt.Axis(title=None,values=vals,labelExpr=expr,
         grid=False,domain=False,labelColor="#7e8db0",labelFontSize=10,tickColor="#1e2c47",labelPadding=2))
     ys=alt.Y("Balance:Q",scale=alt.Scale(zero=False,nice=True),
         axis=alt.Axis(title=None,format="$,.0f",tickCount=4,grid=True,gridColor="#1e2c47",domain=False,
@@ -455,7 +460,7 @@ def render_footer():
 
 # ============================= BOARD =============================
 def render_board():
-    bankroll_block(compact=True)
+    # bankroll widget lives only on the Track Record tab (removed here — was repetitive)
     if slate is None or len(slate)==0:
         st.warning("No slate yet — run:  python3 live/project_slate.py"); return
     # ---- week banner (latest week with settled bets) — below bankroll, above filters ----
