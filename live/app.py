@@ -151,11 +151,12 @@ div[role="radiogroup"]{gap:6px;} div[role="radiogroup"] label{background:var(--c
   div[data-testid="stHorizontalBlock"]{flex-wrap:wrap!important;gap:6px!important;}
   div[data-testid="stHorizontalBlock"]>div[data-testid="column"]{flex:1 1 46%!important;min-width:46%!important;max-width:49%!important;}
   .kpi{padding:8px 10px;} .kpi .n{font-size:19px;} .kpi .l{font-size:9px;letter-spacing:.3px;margin-top:2px;}
-  /* board KPIs: keep all three on one row (no overlap) on mobile */
-  div[data-testid="stHorizontalBlock"]:has([class*="st-key-kpi_"])>div[data-testid="column"]{flex:1 1 31%!important;min-width:31%!important;max-width:33%!important;}
-  /* bankroll: float the settings gear to the top-right corner so it doesn't overlap the label */
-  div[data-testid="stVerticalBlockBorderWrapper"] div[data-testid="stPopover"]{position:absolute!important;top:6px;right:10px;z-index:7;width:auto!important;}
-  div[data-testid="stVerticalBlockBorderWrapper"] div[data-testid="stHorizontalBlock"]:has([data-testid="stPopover"])>div[data-testid="column"]{flex:1 1 100%!important;max-width:100%!important;min-width:100%!important;}
+  /* board KPIs: keep all three on one row (no overlap) on mobile — keyed container, no :has() */
+  .st-key-kpirow div[data-testid="stColumn"],.st-key-kpirow div[data-testid="column"]{flex:1 1 31%!important;min-width:31%!important;max-width:33%!important;}
+  /* bankroll: columns must be static so the gear anchors to the WIDGET, then float it top-right */
+  div[data-testid="stVerticalBlockBorderWrapper"] div[data-testid="stColumn"],div[data-testid="stVerticalBlockBorderWrapper"] div[data-testid="column"]{position:static!important;flex:1 1 100%!important;max-width:100%!important;min-width:100%!important;}
+  div[data-testid="stVerticalBlockBorderWrapper"] div[data-testid="stPopover"]{position:absolute!important;top:8px;right:10px;z-index:9;width:auto!important;}
+  .bank-hdr{padding-right:42px;}
   /* keep the green buttons, just make them compact on mobile */
   .stButton button{font-size:11.5px!important;padding:4px 9px!important;min-height:0!important;}
   .hero h1{font-size:24px;} .hero{padding:16px 18px;}
@@ -539,10 +540,11 @@ def render_board():
         with col:
             st.markdown(f'<div class="kpi{" sel" if sel else ""}"><div class="n {ncls}">{num}</div><div class="l">{label}</div></div>',unsafe_allow_html=True)
             st.button(" ",key=key,on_click=_kpi_pick,args=(val,),use_container_width=True)
-    kc=st.columns(3)
-    _kpi(kc[0],len(bettable),"Upcoming Games","","kpi_all","All games",_aa)
-    _kpi(kc[1],nstrong,"Strong Edge ★","g","kpi_strong","Strong Edge ★",_sa)
-    _kpi(kc[2],nlean,"Edge","","kpi_lean","Edge",_la)
+    with st.container(key="kpirow"):
+        kc=st.columns(3)
+        _kpi(kc[0],len(bettable),"Upcoming Games","","kpi_all","All games",_aa)
+        _kpi(kc[1],nstrong,"Strong Edge ★","g","kpi_strong","Strong Edge ★",_sa)
+        _kpi(kc[2],nlean,"Edge","","kpi_lean","Edge",_la)
     st.markdown("<div style='height:6px'></div>",unsafe_allow_html=True)
     # ---- filter bubbles (just above the games): Show subset · Side ----
     st.session_state.setdefault("bd_subset_prev",["All games"])
