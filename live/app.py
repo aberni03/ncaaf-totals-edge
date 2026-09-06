@@ -361,21 +361,20 @@ def bankroll_block(compact=False):
         with hl: st.markdown(f'<div class="bank-hdr">MODEL BANKROLL · <b class="spanlbl">{span}</b> · ${d["unit"]:,}/bet</div>',unsafe_allow_html=True)
         net=d["net"]; color="#19e59b" if net>=0 else "#ff4d73"; gcls="g" if net>=0 else "r"
         netstr=f'<b style="color:{color}">{"+" if net>=0 else "−"}${abs(net):,.0f}</b>'
-        if compact:
+        if compact:                            # board & track record now render the SAME chart (with axes)
             stats=(f'<div class="lft"><div class="bal {gcls}">${d["bal"]:,.0f}</div>'
               f'<div class="sub">net {netstr} · {d["winp"]:.0f}% win · {d["roi"]:+.1f}% · {d["nbets"]:,} bets</div></div>')
-            st.markdown(f'<div class="bank compact flat">{stats}<div class="rgt">{sparkline(d["curve"],h=62,color=color,base=d["start"])}</div></div>',unsafe_allow_html=True)
         else:
             stats=(f'<div class="lft"><div class="bal {gcls}">${d["bal"]:,.0f}</div>'
               f'<div class="sub">net {netstr} · {d["winp"]:.1f}% win · ROI {d["roi"]:+.1f}% · {d["nbets"]:,} bets</div>'
               f'<div class="chips"><span class="chip">{d["w"]:,}-{d["l"]:,}-{d["p"]:,}</span>'
               f'<span class="chip streak {d["scls"]}">{d["streak"]}</span>'
               f'<span class="chip">last 10 · {d["l10w"]}-{d["l10n"]-d["l10w"]}</span></div></div>')
-            c1,c2=st.columns([2,3])
-            with c1: st.markdown(f'<div class="bank flat" style="grid-template-columns:1fr;height:100%">{stats}</div>',unsafe_allow_html=True)
-            with c2:
-                try: st.altair_chart(equity_chart(d["chart_df"],color,d["start"]),use_container_width=True,theme=None)
-                except Exception: st.markdown(f'<div class="bank flat" style="grid-template-columns:1fr">{sparkline(d["curve"],color=color,base=d["start"])}</div>',unsafe_allow_html=True)
+        c1,c2=st.columns([2,3])
+        with c1: st.markdown(f'<div class="bank flat" style="grid-template-columns:1fr;height:100%">{stats}</div>',unsafe_allow_html=True)
+        with c2:
+            try: st.altair_chart(equity_chart(d["chart_df"],color,d["start"]),use_container_width=True,theme=None)
+            except Exception: st.markdown(f'<div class="bank flat" style="grid-template-columns:1fr">{sparkline(d["curve"],color=color,base=d["start"])}</div>',unsafe_allow_html=True)
 
 @st.cache_data(ttl=600)
 def ratings_for(season, week):
