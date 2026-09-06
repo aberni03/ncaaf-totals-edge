@@ -48,7 +48,7 @@ CSS="""
 .wkrec.win{background:linear-gradient(90deg,rgba(25,229,155,.20),rgba(56,214,255,.08));border:1px solid #1f7a5a;color:#d6f7ec;}
 .wkrec.loss{background:rgba(255,77,115,.12);border:1px solid #5c2130;color:#f3c0cc;}
 .wkrec.even{background:#141d33;border:1px solid var(--line);color:#c7d2ea;}
-.wkrec b{color:#fff;} .wkrec .wkn{color:var(--mut);font-weight:600;font-size:12px;}
+.wkrec b{color:#fff;} .wkrec .wkn{color:var(--mut);font-weight:600;font-size:12px;} .wkrec .wkbest{color:var(--grn);font-weight:800;}
 .kpi{background:linear-gradient(160deg,var(--card),var(--card2));border:1px solid var(--line);border-radius:16px;padding:15px 18px;}
 .kpi .n{font-size:26px;font-weight:900;color:var(--txt);line-height:1;} .kpi .n.g{color:var(--grn);} .kpi .n.r{color:var(--red);}
 .kpi .l{font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:1px;margin-top:6px;font-weight:600;}
@@ -150,9 +150,17 @@ div[role="radiogroup"]{gap:6px;} div[role="radiogroup"] label{background:var(--c
   .tcards{grid-template-columns:1fr;}
   .bank,.bank.compact{grid-template-columns:1fr;gap:12px;}
   .bank .rgt{order:2;}
-  .thead,.trow{grid-template-columns:50px 1fr 42px 56px 52px;gap:6px;font-size:11px;padding-left:10px;padding-right:10px;}
-  .thead>div:nth-child(3),.thead>div:nth-child(7),.thead>div:nth-child(8),
-  .trow>*:nth-child(3),.trow>*:nth-child(7),.trow>*:nth-child(8){display:none;}
+  /* track record: stack each bet into 2 tidy lines on mobile so nothing gets cut off */
+  .thead{display:none;}
+  .trow{grid-template-columns:auto 1fr auto!important;grid-template-areas:"dt mt res" "bet ln clv"!important;gap:4px 8px!important;font-size:11.5px;padding:9px 14px;align-items:center;}
+  .trow>*:nth-child(1){grid-area:dt;}
+  .trow>*:nth-child(2){grid-area:mt;}
+  .trow>*:nth-child(3){grid-area:ln;font-size:10.5px;}
+  .trow>*:nth-child(4){display:none;}
+  .trow>*:nth-child(5){grid-area:bet;justify-self:start;}
+  .trow>*:nth-child(6){grid-area:res;justify-self:end;}
+  .trow>*:nth-child(7){display:none;}
+  .trow>*:nth-child(8){grid-area:clv;justify-self:end;}
 }
 </style>
 """
@@ -408,11 +416,22 @@ def render_board():
           ("Market ✓",str(confirmed),"g")])
     wkbets = track[(track.season==meta.get("season",2026))&(track.week==wk)&(track.rec.isin(["OVER","UNDER"]))] if (track is not None and len(track)) else None
     if wkbets is not None and len(wkbets):
-        dec=wkbets[wkbets.result!="PUSH"]; ww=int((dec.result=="WIN").sum()); ll=int((dec.result=="LOSS").sum()); pp=int((wkbets.result=="PUSH").sum())
-        units=ww*0.9091-ll; roi=units/(ww+ll)*100 if (ww+ll) else 0
+        def _wl(s):
+            d=s[s.result!="PUSH"]; w=int((d.result=="WIN").sum()); l=int((d.result=="LOSS").sum()); return w,l,w*0.9091-l
+        ww,ll,units=_wl(wkbets); pp=int((wkbets.result=="PUSH").sum()); roi=units/(ww+ll)*100 if (ww+ll) else 0
         wcls="win" if units>0.05 else ("loss" if units<-0.05 else "even")
         rec=f"{ww}-{ll}"+(f"-{pp}" if pp else "")
-        st.markdown(f'<div class="wkrec {wcls}">📊 <b>Week {wk} so far</b> &nbsp; {rec} &nbsp;·&nbsp; <b>{units:+.1f}u</b> &nbsp;·&nbsp; {roi:+.0f}% ROI &nbsp;·&nbsp; <span class="wkn">{len(wkbets)} settled</span></div>',unsafe_allow_html=True)
+        cands=[("Unders",wkbets[wkbets.rec=="UNDER"]),("Overs",wkbets[wkbets.rec=="OVER"]),
+               ("Strong ★",wkbets[wkbets.tier=="STRONG"]),("Market-confirmed",wkbets[wkbets.clv_pts>0]),
+               ("Unders + CLV",wkbets[(wkbets.rec=="UNDER")&(wkbets.clv_pts>0)]),
+               ("Strong + CLV",wkbets[(wkbets.tier=="STRONG")&(wkbets.clv_pts>0)])]
+        best=None
+        for name,s in cands:
+            w,l,u=_wl(s)
+            if (w+l)>=3 and (best is None or u>best[3]): best=(name,w,l,u)
+        bhtml=(f' &nbsp;·&nbsp; <span class="wkbest">🔥 hottest angle: {best[0]} {best[1]}-{best[2]} ({best[3]:+.1f}u)</span>'
+               if (best and best[3]>units+0.01) else "")
+        st.markdown(f'<div class="wkrec {wcls}">📊 <b>Week {wk} so far</b> &nbsp; {rec} &nbsp;·&nbsp; <b>{units:+.1f}u</b> &nbsp;·&nbsp; {roi:+.0f}% ROI{bhtml}</div>',unsafe_allow_html=True)
     elif played:
         st.markdown(f'<div class="legend" style="border:0;margin:6px 0 0;padding:0;">✓ {played} game(s) already played this week — in the <b>Track Record</b>.</div>',unsafe_allow_html=True)
     st.markdown("<div style='height:8px'></div>",unsafe_allow_html=True)
