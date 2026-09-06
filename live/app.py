@@ -50,6 +50,15 @@ div[data-testid="stVerticalBlockBorderWrapper"]{background:linear-gradient(120de
 .bank.flat{background:none!important;border:0!important;border-radius:0!important;padding:0!important;margin:0!important;} .bank.flat:before{display:none;}
 div[data-testid="stPopover"] button{padding:2px 9px!important;min-height:0!important;font-size:14px!important;}
 div[data-testid="stVerticalBlockBorderWrapper"] div[data-testid="stPopover"]{display:flex;justify-content:flex-end;}
+/* clickable KPI cards (board) — native buttons styled to look like the stat cards */
+div[class*="st-key-kpi_"] button{background:linear-gradient(160deg,#101b32,#0b1220)!important;border:1px solid #22314f!important;border-radius:14px!important;min-height:96px!important;padding:10px 8px!important;display:flex!important;flex-direction:column!important;justify-content:center!important;gap:0!important;transition:border-color .15s,transform .05s;}
+div[class*="st-key-kpi_"] button:hover{border-color:#3a5488!important;}
+div[class*="st-key-kpi_"] button:active{transform:translateY(1px);}
+div[class*="st-key-kpi_"] button p{margin:0!important;line-height:1.16;white-space:normal!important;text-align:center;}
+div[class*="st-key-kpi_"] button p:nth-of-type(1){font-size:30px;font-weight:900;color:#eef3fc;}
+div[class*="st-key-kpi_"] button p:nth-of-type(2){font-size:12.5px;font-weight:700;color:#c7d2ea;letter-spacing:.3px;}
+div[class*="st-key-kpi_"] button p:nth-of-type(3){font-size:11px;color:#8aa0c6;font-weight:600;margin-top:2px!important;}
+.st-key-kpi_strong button p:nth-of-type(1){color:#19e59b;}
 .wkrec{border-radius:12px;padding:10px 16px;margin:2px 0 4px;font-size:14px;font-weight:700;text-align:center;}
 .wkrec.win{background:linear-gradient(90deg,rgba(25,229,155,.20),rgba(56,214,255,.08));border:1px solid #1f7a5a;color:#d6f7ec;}
 .wkrec.loss{background:rgba(255,77,115,.12);border:1px solid #5c2130;color:#f3c0cc;}
@@ -250,6 +259,11 @@ def _subset_cb():
     if "All games" in added: new=["All games"]           # clicked All games -> clear the others
     elif added: new=[x for x in new if x!="All games"]    # clicked Edge/Strong -> drop All games
     if not new: new=["All games"]                          # nothing selected -> fall back to All games
+    st.session_state.bd_subset=new; st.session_state.bd_subset_prev=new
+def _kpi_pick(val):
+    # clicking a KPI card sets/toggles the same board filter the pills drive
+    cur=st.session_state.get("bd_subset") or []
+    new=["All games"] if (val=="All games" or val in cur) else [val]
     st.session_state.bd_subset=new; st.session_state.bd_subset_prev=new
 def _reset_tr():
     ds=str(int(track.season.max())) if (track is not None and len(track)) else "All"   # default = current season
@@ -513,10 +527,14 @@ def render_board():
     nstrong=int((bettable.abs_edge>=5).sum()); nlean=int(((bettable.abs_edge>=3)&(bettable.abs_edge<5)).sum())
     scon=int(((bettable.abs_edge>=5)&(bettable.move>=1)).sum())
     lcon=int(((bettable.abs_edge>=3)&(bettable.abs_edge<5)&(bettable.move>=1)).sum())
+    st.session_state.setdefault("bd_subset",["All games"]); st.session_state.setdefault("bd_subset_prev",["All games"])
     kc=st.columns(3)
-    kc[0].markdown(f'<div class="kpi"><div class="n">{len(bettable)}</div><div class="l">Upcoming Games</div><div class="ksub">&nbsp;</div></div>',unsafe_allow_html=True)
-    kc[1].markdown(f'<div class="kpi"><div class="n g">{nstrong}</div><div class="l">Strong Edge ★</div><div class="ksub">✓ {scon} market-confirmed</div></div>',unsafe_allow_html=True)
-    kc[2].markdown(f'<div class="kpi"><div class="n">{nlean}</div><div class="l">Edge</div><div class="ksub">✓ {lcon} market-confirmed</div></div>',unsafe_allow_html=True)
+    kc[0].button(f"{len(bettable)}\n\nUpcoming Games\n\nshow all games", key="kpi_all",
+                 on_click=_kpi_pick, args=("All games",), use_container_width=True, help="Click to clear the filter")
+    kc[1].button(f"{nstrong}\n\nStrong Edge ★\n\n✓ {scon} market-confirmed", key="kpi_strong",
+                 on_click=_kpi_pick, args=("Strong Edge ★",), use_container_width=True, help="Click to show only Strong Edge games")
+    kc[2].button(f"{nlean}\n\nEdge\n\n✓ {lcon} market-confirmed", key="kpi_lean",
+                 on_click=_kpi_pick, args=("Edge",), use_container_width=True, help="Click to show only Edge games")
     st.markdown("<div style='height:6px'></div>",unsafe_allow_html=True)
     # ---- filter bubbles (just above the games): Show subset · Side ----
     st.session_state.setdefault("bd_subset_prev",["All games"])
