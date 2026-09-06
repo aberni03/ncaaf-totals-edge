@@ -238,7 +238,7 @@ def sparkline(vals, w=560, h=96, color="#19e59b", base=None):
       f'<polyline points="{pts}" fill="none" stroke="{color}" stroke-width="2.2" stroke-linejoin="round"/>'
       f'<circle cx="{ex:.1f}" cy="{ey:.1f}" r="3.5" fill="{color}"/></svg>')
 
-BK_DEFAULTS={"bk_basis":"All bets (≥3)","bk_unit":100,"bk_start":10000,"bk_scope":"All time","bk_side":"Both","bk_clv":"All CLV","bk_week":"All weeks"}
+BK_DEFAULTS={"bk_basis":"All bets (≥3)","bk_unit":100,"bk_start":0,"bk_scope":"All time","bk_side":"Both","bk_clv":"All CLV","bk_week":"All weeks"}
 def _read_bk(): return tuple(st.session_state.get(k,v) for k,v in BK_DEFAULTS.items())
 def _reset_bk():
     for k,v in BK_DEFAULTS.items(): st.session_state[k]=v   # callback runs before widgets re-instantiate
@@ -365,13 +365,13 @@ def bankroll_block(compact=False):
         span=("All-Time" if d["scope"].startswith("All") else "2026 season")+("" if d["week"]=="All weeks" else f" · Wk {d['week']}")
         with hl: st.markdown(f'<div class="bank-hdr">MODEL BANKROLL · <b class="spanlbl">{span}</b> · ${d["unit"]:,}/bet</div>',unsafe_allow_html=True)
         net=d["net"]; color="#19e59b" if net>=0 else "#ff4d73"; gcls="g" if net>=0 else "r"
-        netstr=f'<b style="color:{color}">{"+" if net>=0 else "−"}${abs(net):,.0f}</b>'
+        bignet=f'Net {"+" if net>=0 else "−"}${abs(net):,.0f}'   # always Net P&L, whatever the starting bankroll
         if compact:                            # board & track record now render the SAME chart (with axes)
-            stats=(f'<div class="lft"><div class="bal {gcls}">${d["bal"]:,.0f}</div>'
-              f'<div class="sub">net {netstr} · {d["winp"]:.0f}% win · {d["roi"]:+.1f}% · {d["nbets"]:,} bets</div></div>')
+            stats=(f'<div class="lft"><div class="bal {gcls}">{bignet}</div>'
+              f'<div class="sub">{d["winp"]:.0f}% win · {d["roi"]:+.1f}% ROI · {d["nbets"]:,} bets</div></div>')
         else:
-            stats=(f'<div class="lft"><div class="bal {gcls}">${d["bal"]:,.0f}</div>'
-              f'<div class="sub">net {netstr} · {d["winp"]:.1f}% win · ROI {d["roi"]:+.1f}% · {d["nbets"]:,} bets</div>'
+            stats=(f'<div class="lft"><div class="bal {gcls}">{bignet}</div>'
+              f'<div class="sub">{d["winp"]:.1f}% win · ROI {d["roi"]:+.1f}% · {d["nbets"]:,} bets</div>'
               f'<div class="chips"><span class="chip">{d["w"]:,}-{d["l"]:,}-{d["p"]:,}</span>'
               f'<span class="chip streak {d["scls"]}">{d["streak"]}</span>'
               f'<span class="chip">last 10 · {d["l10w"]}-{d["l10n"]-d["l10w"]}</span></div></div>')
@@ -484,14 +484,10 @@ def render_board():
                 if (w2+l2)>=3 and (best is None or u2>best[3]): best=(name,w2,l2,u2)
             bhtml=(f' &nbsp;·&nbsp; <span class="wkbest">🔥 hottest angle: {best[0]} {best[1]}-{best[2]} ({best[3]:+.1f}u)</span>' if (best and best[3]>units+0.01) else "")
             st.markdown(f'<div class="wkrec {wcls}">📊 <b>{wklbl}</b> &nbsp; {rec} &nbsp;·&nbsp; <b>{units:+.1f}u</b> &nbsp;·&nbsp; {roi:+.0f}% ROI{bhtml}</div>',unsafe_allow_html=True)
-    # ---- controls: Week (left) · subset bubbles · side bubbles (right) ----
+    # ---- Week picker (drives the KPIs below) ----
     weeks=sorted(slate.week.dropna().unique()); cur=meta.get("current_week", weeks[0] if weeks else 1)
-    cc=st.columns([1,2,1.5])
-    with cc[0]: wk=st.selectbox("Week",weeks,index=weeks.index(cur) if cur in weeks else 0)
-    st.session_state.setdefault("bd_subset_prev",["All games"])
-    with cc[1]: subset=st.pills("Show",["All games","Edge","Strong Edge ★"],selection_mode="multi",default=["All games"],key="bd_subset",on_change=_subset_cb,label_visibility="collapsed")
-    with cc[2]: side_sel=st.pills("Side",["Both","Overs","Unders"],default="Both",key="bd_side",label_visibility="collapsed")
-    # ---- build the board ----
+    with st.columns([1,3])[0]: wk=st.selectbox("Week",weeks,index=weeks.index(cur) if cur in weeks else 0)
+    # ---- build the week's games ----
     now=datetime.now(timezone.utc)
     def _kicked(iso):
         try: return datetime.fromisoformat(str(iso).replace("Z","+00:00"))<=now
@@ -502,6 +498,22 @@ def render_board():
     # "Now" = live pre-game market until kickoff, then the frozen CFBD close (never a live in-game total)
     wkall["now_val"]=np.where(wkall.kicked, ct.fillna(wkall.open_total), wkall.mkt_total)
     wkall["move"]=np.where(wkall.side=="OVER", wkall.now_val-wkall.open_total, wkall.open_total-wkall.now_val)  # + toward model
+    # ---- KPIs (equal-size boxes) ----
+    bettable=wkall[~wkall.kicked.astype(bool)]
+    nstrong=int((bettable.abs_edge>=5).sum()); nlean=int(((bettable.abs_edge>=3)&(bettable.abs_edge<5)).sum())
+    scon=int(((bettable.abs_edge>=5)&(bettable.move>=1)).sum())
+    lcon=int(((bettable.abs_edge>=3)&(bettable.abs_edge<5)&(bettable.move>=1)).sum())
+    kc=st.columns(3)
+    kc[0].markdown(f'<div class="kpi"><div class="n">{len(bettable)}</div><div class="l">Upcoming Games</div><div class="ksub">&nbsp;</div></div>',unsafe_allow_html=True)
+    kc[1].markdown(f'<div class="kpi"><div class="n g">{nstrong}</div><div class="l">Strong Edge ★</div><div class="ksub">✓ {scon} market-confirmed</div></div>',unsafe_allow_html=True)
+    kc[2].markdown(f'<div class="kpi"><div class="n">{nlean}</div><div class="l">Edge</div><div class="ksub">✓ {lcon} market-confirmed</div></div>',unsafe_allow_html=True)
+    st.markdown("<div style='height:6px'></div>",unsafe_allow_html=True)
+    # ---- filter bubbles (just above the games): Show subset · Side ----
+    st.session_state.setdefault("bd_subset_prev",["All games"])
+    fc=st.columns([2,1.5])
+    with fc[0]: subset=st.pills("Show",["All games","Edge","Strong Edge ★"],selection_mode="multi",default=["All games"],key="bd_subset",on_change=_subset_cb,label_visibility="collapsed")
+    with fc[1]: side_sel=st.pills("Side",["Both","Overs","Unders"],default="Both",key="bd_side",label_visibility="collapsed")
+    # ---- apply filters -> view ----
     view=wkall.copy()
     if side_sel=="Overs": view=view[view.side=="OVER"]
     elif side_sel=="Unders": view=view[view.side=="UNDER"]
@@ -512,16 +524,6 @@ def render_board():
         if lean_sel: m=m|((view.abs_edge>=3)&(view.abs_edge<5))
         if strong_sel: m=m|(view.abs_edge>=5)
         view=view[m]
-    # ---- KPIs (equal-size boxes) ----
-    bettable=wkall[~wkall.kicked.astype(bool)]
-    nstrong=int((bettable.abs_edge>=5).sum()); nlean=int(((bettable.abs_edge>=3)&(bettable.abs_edge<5)).sum())
-    scon=int(((bettable.abs_edge>=5)&(bettable.move>=1)).sum())
-    lcon=int(((bettable.abs_edge>=3)&(bettable.abs_edge<5)&(bettable.move>=1)).sum())
-    kc=st.columns(3)
-    kc[0].markdown(f'<div class="kpi"><div class="n">{len(bettable)}</div><div class="l">Upcoming Games</div><div class="ksub">&nbsp;</div></div>',unsafe_allow_html=True)
-    kc[1].markdown(f'<div class="kpi"><div class="n g">{nstrong}</div><div class="l">Strong Edge ★</div><div class="ksub">✓ {scon} market-confirmed</div></div>',unsafe_allow_html=True)
-    kc[2].markdown(f'<div class="kpi"><div class="n">{nlean}</div><div class="l">Edge</div><div class="ksub">✓ {lcon} market-confirmed</div></div>',unsafe_allow_html=True)
-    st.markdown("<div style='height:4px'></div>",unsafe_allow_html=True)
     def arrow(o,c):
         if o is None or c is None or pd.isna(o) or pd.isna(c) or c==o: return '<span class="ar">→</span>'
         return '<span class="ar up">↗</span>' if c>o else '<span class="ar dn">↘</span>'
