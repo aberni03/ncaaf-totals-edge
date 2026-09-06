@@ -258,7 +258,11 @@ def _reset_tr():
 
 def bankroll_settings():
     for k,v in BK_DEFAULTS.items(): st.session_state.setdefault(k,v)
-    wkopts=["All weeks"]+[str(int(w)) for w in sorted(track.week.dropna().unique())] if (track is not None and len(track)) else ["All weeks"]
+    if track is not None and len(track):
+        scope_opts=["All time"]+[f"{int(s)} season" for s in sorted(track.season.unique())]
+        wkopts=["All weeks","Early (Wk 1–4)","Mid (Wk 5–9)","Late (Wk 10+)"]+[f"Wk {int(w)}" for w in sorted(track.week.dropna().unique())]
+    else:
+        scope_opts=["All time"]; wkopts=["All weeks"]
     with st.popover("⚙️", help="Bankroll settings"):
         st.markdown("**Model bankroll settings**")
         st.selectbox("Stake on",["Strong Edge (≥5)","All bets (≥3)"],key="bk_basis")
@@ -266,8 +270,8 @@ def bankroll_settings():
         cA.number_input("$ per bet (flat)",min_value=10,max_value=100000,step=10,key="bk_unit")
         cB.number_input("Starting bankroll $",min_value=0,max_value=10000000,step=500,key="bk_start")
         cE,cF=st.columns(2)
-        with cE: st.selectbox("Span",["All time","2026 season only"],key="bk_scope")
-        with cF: st.selectbox("Week",wkopts,key="bk_week")
+        with cE: st.selectbox("Span (season)",scope_opts,key="bk_scope")
+        with cF: st.selectbox("Week / phase",wkopts,key="bk_week")
         cC,cD=st.columns(2)
         with cC: st.selectbox("Side",["Both","Overs only","Unders only"],key="bk_side")
         with cD: st.selectbox("CLV",["All CLV","CLV+ (market agreed)","CLV− (market faded)"],key="bk_clv")
@@ -278,10 +282,16 @@ def _bk_compute(track):
     b=track[track.rec.isin(["OVER","UNDER"])].copy()
     if basis.startswith("Strong"): b=b[b.tier=="STRONG"]
     else: b=b[b.tier.isin(["STRONG","LEAN"])]          # "All bets (≥3)" = real plays only (drop edge<3 no-plays)
-    if scope.startswith("2026"): b=b[b.season==2026]
-    if week!="All weeks":
-        try: b=b[b.week==int(week)]
+    if scope!="All time":
+        try: b=b[b.season==int(str(scope).split()[0])]     # "2023 season" -> 2023
         except Exception: pass
+    if week!="All weeks":
+        if week.startswith("Early"): b=b[b.week<=4]
+        elif week.startswith("Mid"): b=b[(b.week>=5)&(b.week<=9)]
+        elif week.startswith("Late"): b=b[b.week>=10]
+        else:
+            try: b=b[b.week==int(week.replace("Wk","").strip())]
+            except Exception: pass
     if side=="Overs only": b=b[b.rec=="OVER"]
     elif side=="Unders only": b=b[b.rec=="UNDER"]
     if "agreed" in clv: b=b[b.clv_pts>0]          # positive CLV = close moved toward the model
@@ -362,7 +372,7 @@ def bankroll_block(compact=False):
         if d is None:
             with hl: st.markdown('<div class="bank-hdr">MODEL BANKROLL — no bets match these settings</div>',unsafe_allow_html=True)
             return
-        span=("All-Time" if d["scope"].startswith("All") else "2026 season")+("" if d["week"]=="All weeks" else f" · Wk {d['week']}")
+        span=("All-Time" if d["scope"].startswith("All") else d["scope"])+("" if d["week"]=="All weeks" else f" · {d['week']}")
         with hl: st.markdown(f'<div class="bank-hdr">MODEL BANKROLL · <b class="spanlbl">{span}</b> · ${d["unit"]:,}/bet</div>',unsafe_allow_html=True)
         net=d["net"]; color="#19e59b" if net>=0 else "#ff4d73"; gcls="g" if net>=0 else "r"
         bignet=f'Net {"+" if net>=0 else "−"}${abs(net):,.0f}'   # always Net P&L, whatever the starting bankroll
