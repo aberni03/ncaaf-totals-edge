@@ -3,6 +3,7 @@ import os, sys, json, subprocess
 from datetime import datetime, timezone
 import pandas as pd, numpy as np
 import streamlit as st
+import altair as alt
 HERE=os.path.dirname(os.path.abspath(__file__)); ROOT=os.path.dirname(HERE); OUT=ROOT+"/out"; sys.path.insert(0,HERE)
 st.set_page_config(page_title="CFB Totals Edge", page_icon="🏈", layout="wide", initial_sidebar_state="collapsed")
 
@@ -52,6 +53,7 @@ CSS="""
 .kpi{background:linear-gradient(160deg,var(--card),var(--card2));border:1px solid var(--line);border-radius:16px;padding:15px 18px;}
 .kpi .n{font-size:26px;font-weight:900;color:var(--txt);line-height:1;} .kpi .n.g{color:var(--grn);} .kpi .n.r{color:var(--red);}
 .kpi .l{font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:1px;margin-top:6px;font-weight:600;}
+.kpi .ksub{font-size:10px;color:var(--grn);font-weight:700;margin-top:4px;}
 .daybar{display:flex;align-items:center;gap:10px;margin:22px 0 10px;}
 .daybar span{color:#cdd7ee;font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;}
 .daybar .ln{flex:1;height:1px;background:linear-gradient(90deg,var(--line),transparent);}
@@ -231,33 +233,40 @@ def sparkline(vals, w=560, h=96, color="#19e59b", base=None):
       f'<polyline points="{pts}" fill="none" stroke="{color}" stroke-width="2.2" stroke-linejoin="round"/>'
       f'<circle cx="{ex:.1f}" cy="{ey:.1f}" r="3.5" fill="{color}"/></svg>')
 
-BK_DEFAULTS={"bk_basis":"All bets (≥3)","bk_unit":100,"bk_start":10000,"bk_scope":"All history (2020→)","bk_side":"Both","bk_clv":"All CLV"}
+BK_DEFAULTS={"bk_basis":"All bets (≥3)","bk_unit":100,"bk_start":10000,"bk_scope":"All time","bk_side":"Both","bk_clv":"All CLV","bk_week":"All weeks"}
 def _read_bk(): return tuple(st.session_state.get(k,v) for k,v in BK_DEFAULTS.items())
 def _reset_bk():
     for k,v in BK_DEFAULTS.items(): st.session_state[k]=v   # callback runs before widgets re-instantiate
 def _reset_tr():
     ds=str(int(track.season.max())) if (track is not None and len(track)) else "All"   # default = current season
-    for k,v in {"tr_season":ds,"tr_tier":"All bets (≥3)","tr_result":"All","tr_side":"Both","tr_clv":"All CLV"}.items():
+    for k,v in {"tr_season":ds,"tr_tier":"All bets (≥3)","tr_result":"All","tr_side":"Both","tr_clv":"All CLV","tr_week":"All weeks"}.items():
         st.session_state[k]=v
 
 def bankroll_settings():
     for k,v in BK_DEFAULTS.items(): st.session_state.setdefault(k,v)
-    with st.popover("💰 Bankroll settings"):
+    wkopts=["All weeks"]+[str(int(w)) for w in sorted(track.week.dropna().unique())] if (track is not None and len(track)) else ["All weeks"]
+    with st.popover("⚙️ Settings"):
+        st.markdown("**Model bankroll settings**")
         st.selectbox("Stake on",["Strong bets (≥5)","All bets (≥3)"],key="bk_basis")
         cA,cB=st.columns(2)
         cA.number_input("$ per bet (flat)",min_value=10,max_value=100000,step=10,key="bk_unit")
         cB.number_input("Starting bankroll $",min_value=0,max_value=10000000,step=500,key="bk_start")
-        st.selectbox("Span",["All history (2020→)","2026 season only"],key="bk_scope")
+        cE,cF=st.columns(2)
+        with cE: st.selectbox("Span",["All time","2026 season only"],key="bk_scope")
+        with cF: st.selectbox("Week",wkopts,key="bk_week")
         cC,cD=st.columns(2)
         with cC: st.selectbox("Side",["Both","Overs only","Unders only"],key="bk_side")
         with cD: st.selectbox("CLV",["All CLV","CLV+ (market agreed)","CLV− (market faded)"],key="bk_clv")
         st.button("↺  Reset to defaults", use_container_width=True, on_click=_reset_bk, key="bk_reset")
 
 def _bk_compute(track):
-    basis,unit,start,scope,side,clv=_read_bk()
+    basis,unit,start,scope,side,clv,week=_read_bk()
     b=track[track.rec.isin(["OVER","UNDER"])].copy()
     if basis.startswith("Strong"): b=b[b.tier=="STRONG"]
     if scope.startswith("2026"): b=b[b.season==2026]
+    if week!="All weeks":
+        try: b=b[b.week==int(week)]
+        except Exception: pass
     if side=="Overs only": b=b[b.rec=="OVER"]
     elif side=="Unders only": b=b[b.rec=="UNDER"]
     if "agreed" in clv: b=b[b.clv_pts>0]          # positive CLV = close moved toward the model
@@ -266,7 +275,7 @@ def _bk_compute(track):
     b=b.sort_values(["season","_dt","week"])
     if len(b)==0: return None
     pnl=b.result.map({"WIN":0.9091,"LOSS":-1.0,"PUSH":0.0}).fillna(0)*unit
-    curve=(start+pnl.cumsum()).tolist(); bal=curve[-1]; net=bal-start
+    cum=start+pnl.cumsum(); curve=cum.tolist(); bal=curve[-1]; net=bal-start
     dec=b[b.result!="PUSH"]; w=int((dec.result=="WIN").sum()); l=int((dec.result=="LOSS").sum()); p=int((b.result=="PUSH").sum())
     roi=net/(len(dec)*unit)*100 if len(dec) else 0
     winp=w/(w+l)*100 if (w+l) else 0
@@ -276,15 +285,33 @@ def _bk_compute(track):
         else: break
     streak=f'🔥 W{stk}' if r0=="WIN" else (f'🧊 L{stk}' if r0=="LOSS" else "—")
     l10=list(dec.result)[-10:]
+    chart_df=pd.DataFrame({"idx":range(1,len(b)+1),"Balance":cum.values,"Net":cum.values-start,
+        "date":b.date.values,"game":(b.away.astype(str)+" @ "+b.home.astype(str)).values,"result":b.result.values})
     return dict(basis=basis,unit=unit,start=start,curve=curve,bal=bal,net=net,roi=roi,winp=winp,
                 w=w,l=l,p=p,streak=streak,scls="hot" if r0=="WIN" else "cold",
-                l10w=l10.count("WIN"),l10n=len(l10),nbets=len(dec))
+                l10w=l10.count("WIN"),l10n=len(l10),nbets=len(dec),chart_df=chart_df)
+
+def equity_chart(cdf, color, start):
+    hover=alt.selection_point(fields=["idx"],nearest=True,on="mouseover",empty=False)
+    xs=alt.X("idx:Q",axis=None)
+    ys=alt.Y("Balance:Q",scale=alt.Scale(zero=False),
+        axis=alt.Axis(title=None,format="$,.0f",tickCount=3,grid=True,gridColor="#1e2c47",domain=False,
+                      labelColor="#7e8db0",labelFontSize=10,tickColor="#1e2c47"))
+    area=alt.Chart(cdf).mark_area(interpolate="monotone",line={"color":color,"strokeWidth":2.5},
+        color=alt.Gradient(gradient="linear",x1=1,x2=1,y1=0,y2=1,
+            stops=[alt.GradientStop(color=color,offset=0),alt.GradientStop(color="#0b1020",offset=1)])).encode(x=xs,y=ys)
+    base=alt.Chart(pd.DataFrame({"y":[start]})).mark_rule(color="#33415f",strokeDash=[4,4]).encode(y="y:Q")
+    pts=alt.Chart(cdf).mark_circle(color=color).encode(x=xs,y=ys,
+        opacity=alt.condition(hover,alt.value(1),alt.value(0)),size=alt.condition(hover,alt.value(80),alt.value(0)),
+        tooltip=[alt.Tooltip("game:N",title="Bet"),alt.Tooltip("date:N",title="Date"),alt.Tooltip("result:N",title="Result"),
+                 alt.Tooltip("Net:Q",title="Net P&L",format="+$,.0f"),alt.Tooltip("Balance:Q",title="Bankroll",format="$,.0f")]).add_params(hover)
+    return (area+base+pts).properties(height=190,background="transparent").configure_view(strokeWidth=0)
 
 def bankroll_card(track, compact=False):
     if track is None or len(track)==0: return
     d=_bk_compute(track)
     if d is None:
-        if not compact: st.markdown('<div class="bank"><div class="lft"><div class="sub">MODEL BANKROLL</div><div class="bal">—</div><div class="sub">no bets in this span yet</div></div><div class="rgt"></div></div>',unsafe_allow_html=True)
+        if not compact: st.markdown('<div class="bank" style="grid-template-columns:1fr"><div class="lft"><div class="sub">MODEL BANKROLL</div><div class="bal">—</div><div class="sub">no bets match these settings yet</div></div></div>',unsafe_allow_html=True)
         return
     net=d["net"]; color="#19e59b" if net>=0 else "#ff4d73"; gcls="g" if net>=0 else "r"
     netstr=f'<b style="color:{color}">{"+" if net>=0 else "−"}${abs(net):,.0f}</b>'
@@ -292,17 +319,23 @@ def bankroll_card(track, compact=False):
         st.markdown(f'''<div class="bank compact"><div class="lft">
           <div class="sub">MODEL BANKROLL · {d["basis"].split(" ")[0].lower()}</div>
           <div class="bal {gcls}">${d["bal"]:,.0f}</div>
-          <div class="sub">net {netstr} · {d["winp"]:.0f}% win · {d["roi"]:+.1f}% · {d["nbets"]} bets</div></div>
+          <div class="sub">net {netstr} · {d["winp"]:.0f}% win · {d["roi"]:+.1f}% · {d["nbets"]:,} bets</div></div>
           <div class="rgt">{sparkline(d["curve"],h=62,color=color,base=d["start"])}</div></div>''',unsafe_allow_html=True)
     else:
-        st.markdown(f'''<div class="bank"><div class="lft">
+        st.markdown(f'''<div class="bank" style="grid-template-columns:1fr"><div class="lft">
           <div class="sub">MODEL BANKROLL · {d["basis"].split(" ")[0].lower()} plays · ${d["unit"]:,}/bet</div>
           <div class="bal {gcls}">${d["bal"]:,.0f}</div>
-          <div class="sub">net {netstr} · {d["winp"]:.1f}% win · ROI {d["roi"]:+.1f}% · {d["nbets"]} bets</div>
-          <div class="chips"><span class="chip">{d["w"]}-{d["l"]}-{d["p"]}</span>
+          <div class="sub">net {netstr} · {d["winp"]:.1f}% win · ROI {d["roi"]:+.1f}% · {d["nbets"]:,} bets</div>
+          <div class="chips"><span class="chip">{d["w"]:,}-{d["l"]:,}-{d["p"]:,}</span>
             <span class="chip streak {d["scls"]}">{d["streak"]}</span>
-            <span class="chip">last 10 · {d["l10w"]}-{d["l10n"]-d["l10w"]}</span></div></div>
-          <div class="rgt">{sparkline(d["curve"],color=color,base=d["start"])}</div></div>''',unsafe_allow_html=True)
+            <span class="chip">last 10 · {d["l10w"]}-{d["l10n"]-d["l10w"]}</span></div></div></div>''',unsafe_allow_html=True)
+        try: st.altair_chart(equity_chart(d["chart_df"],color,d["start"]),use_container_width=True,theme=None)
+        except Exception: st.markdown(f'<div style="margin:-8px 0 10px">{sparkline(d["curve"],color=color,base=d["start"])}</div>',unsafe_allow_html=True)
+
+def bankroll_block(compact=False):
+    _,rc=st.columns([4,1])
+    with rc: bankroll_settings()          # ⚙️ settings on the right of the widget — on BOTH pages
+    bankroll_card(track, compact=compact)
 
 @st.cache_data(ttl=600)
 def ratings_for(season, week):
@@ -384,14 +417,13 @@ def render_footer():
 
 # ============================= BOARD =============================
 def render_board():
-    bankroll_card(track, compact=True)
+    bankroll_block(compact=True)
     if slate is None or len(slate)==0:
         st.warning("No slate yet — run:  python3 live/project_slate.py"); return
     weeks=sorted(slate.week.dropna().unique()); cur=meta.get("current_week", weeks[0] if weeks else 1)
-    f1,f2,f3=st.columns([1,1.6,1.3])
+    f1,f2=st.columns([1,1.3])
     with f1: wk=st.selectbox("Week",weeks,index=weeks.index(cur) if cur in weeks else 0)
-    with f2: show=st.selectbox("Filter",["Leans + bets (edge ≥ 3)","Bets: STRONG (edge ≥ 5)","All games"])
-    with f3: side_f=st.selectbox("Side",["Both","Overs only","Unders only"])
+    with f2: side_f=st.selectbox("Side",["Both","Overs only","Unders only"])
     wkraw=slate[slate.week==wk].copy()
     played=int(wkraw.actual_total.notna().sum())
     now=datetime.now(timezone.utc)
@@ -405,16 +437,23 @@ def render_board():
     wkall["now_val"]=np.where(wkall.kicked, ct.fillna(wkall.open_total), wkall.mkt_total)
     wkall["move"]=np.where(wkall.side=="OVER", wkall.now_val-wkall.open_total, wkall.open_total-wkall.now_val)  # + toward model
     view=wkall.copy()
-    if show.startswith("Bets"): view=view[view.abs_edge>=5]
-    elif show.startswith("Leans"): view=view[view.abs_edge>=3]
     if side_f=="Overs only": view=view[view.side=="OVER"]
     elif side_f=="Unders only": view=view[view.side=="UNDER"]
     bettable=wkall[~wkall.kicked.astype(bool)]   # KPI counts reflect games you can still bet
-    confirmed=int(((bettable.abs_edge>=3)&(bettable.move>=1)).sum())
-    kpis([("Upcoming",str(len(bettable)),""),("Strong ★",str(int((bettable.abs_edge>=5).sum())),"g"),
-          ("Leans",str(int(((bettable.abs_edge>=3)&(bettable.abs_edge<5)).sum())),""),
-          ("Market ✓",str(confirmed),"g")])
-    wkbets = track[(track.season==meta.get("season",2026))&(track.week==wk)&(track.rec.isin(["OVER","UNDER"]))] if (track is not None and len(track)) else None
+    nstrong=int((bettable.abs_edge>=5).sum()); nlean=int(((bettable.abs_edge>=3)&(bettable.abs_edge<5)).sum())
+    scon=int(((bettable.abs_edge>=5)&(bettable.move>=1)).sum())
+    lcon=int(((bettable.abs_edge>=3)&(bettable.abs_edge<5)&(bettable.move>=1)).sum())
+    kc=st.columns(3)
+    kc[0].markdown(f'<div class="kpi"><div class="n">{len(bettable)}</div><div class="l">Upcoming</div></div>',unsafe_allow_html=True)
+    kc[1].markdown(f'<div class="kpi"><div class="n g">{nstrong}</div><div class="l">Strong ★</div><div class="ksub">✓ {scon} market-confirmed</div></div>',unsafe_allow_html=True)
+    kc[2].markdown(f'<div class="kpi"><div class="n">{nlean}</div><div class="l">Leans</div><div class="ksub">✓ {lcon} market-confirmed</div></div>',unsafe_allow_html=True)
+    tr26 = track[(track.season==meta.get("season",2026))&(track.rec.isin(["OVER","UNDER"]))] if (track is not None and len(track)) else None
+    wkbets=None; wklbl=f"Week {wk} so far"
+    if tr26 is not None and len(tr26):
+        bwk=int(tr26.week.max())                       # latest week that has settled bets
+        wkbets=tr26[tr26.week==bwk]
+        remaining=int(slate[slate.week==bwk].actual_total.isna().sum())   # games in that week not yet final
+        wklbl=f"Week {bwk}" if remaining==0 else f"Week {bwk} so far"      # drop 'so far' once the week is complete
     if wkbets is not None and len(wkbets):
         def _wl(s):
             d=s[s.result!="PUSH"]; w=int((d.result=="WIN").sum()); l=int((d.result=="LOSS").sum()); return w,l,w*0.9091-l
@@ -431,10 +470,14 @@ def render_board():
             if (w+l)>=3 and (best is None or u>best[3]): best=(name,w,l,u)
         bhtml=(f' &nbsp;·&nbsp; <span class="wkbest">🔥 hottest angle: {best[0]} {best[1]}-{best[2]} ({best[3]:+.1f}u)</span>'
                if (best and best[3]>units+0.01) else "")
-        st.markdown(f'<div class="wkrec {wcls}">📊 <b>Week {wk} so far</b> &nbsp; {rec} &nbsp;·&nbsp; <b>{units:+.1f}u</b> &nbsp;·&nbsp; {roi:+.0f}% ROI{bhtml}</div>',unsafe_allow_html=True)
+        st.markdown(f'<div class="wkrec {wcls}">📊 <b>{wklbl}</b> &nbsp; {rec} &nbsp;·&nbsp; <b>{units:+.1f}u</b> &nbsp;·&nbsp; {roi:+.0f}% ROI{bhtml}</div>',unsafe_allow_html=True)
     elif played:
         st.markdown(f'<div class="legend" style="border:0;margin:6px 0 0;padding:0;">✓ {played} game(s) already played this week — in the <b>Track Record</b>.</div>',unsafe_allow_html=True)
-    st.markdown("<div style='height:8px'></div>",unsafe_allow_html=True)
+    subset=st.pills("view",["All games","Leans + (≥3)","Strong ★ (≥5)"],default="All games",
+                    label_visibility="collapsed",key="bd_subset")
+    if subset and "Strong" in subset: view=view[view.abs_edge>=5]
+    elif subset and "Leans" in subset: view=view[view.abs_edge>=3]
+    st.markdown("<div style='height:4px'></div>",unsafe_allow_html=True)
     def arrow(o,c):
         if o is None or c is None or pd.isna(o) or pd.isna(c) or c==o: return '<span class="ar">→</span>'
         return '<span class="ar up">↗</span>' if c>o else '<span class="ar dn">↘</span>'
@@ -485,13 +528,13 @@ def render_track():
     if track is None or len(track)==0:
         st.warning("No track record yet — run:  python3 live/build_track_record.py"); return
     seasons=["All"]+[str(s) for s in sorted(track.season.unique())]
+    weeks_tr=["All weeks"]+[str(int(x)) for x in sorted(track.week.dropna().unique())]
     def_season=str(int(track.season.max())) if len(track) else "All"   # default = current season
-    for k,v in {"tr_season":def_season,"tr_tier":"All bets (≥3)","tr_result":"All","tr_side":"Both","tr_clv":"All CLV"}.items():
+    for k,v in {"tr_season":def_season,"tr_tier":"All bets (≥3)","tr_result":"All","tr_side":"Both","tr_clv":"All CLV","tr_week":"All weeks"}.items():
         st.session_state.setdefault(k,v)
     seas=st.session_state["tr_season"]; tier=st.session_state["tr_tier"]; res=st.session_state["tr_result"]
-    side_f=st.session_state["tr_side"]; clv_f=st.session_state["tr_clv"]
-    bankroll_settings()
-    bankroll_card(track, compact=False)
+    side_f=st.session_state["tr_side"]; clv_f=st.session_state["tr_clv"]; week_f=st.session_state["tr_week"]
+    bankroll_block(compact=False)
     d=track.copy()
     if seas!="All": d=d[d.season==int(seas)]
     bets=d[d.rec.isin(["OVER","UNDER"])].copy()       # actual bets only (a play was recommended, edge>=3)
@@ -501,6 +544,9 @@ def render_track():
     elif side_f=="Unders only": bets=bets[bets.rec=="UNDER"]
     if "agreed" in clv_f: bets=bets[bets.clv_pts>0]
     elif "faded" in clv_f: bets=bets[bets.clv_pts<0]
+    if week_f!="All weeks":
+        try: bets=bets[bets.week==int(week_f)]
+        except Exception: pass
     dec=bets[bets.result!="PUSH"]; w=int((dec.result=="WIN").sum()); l=int((dec.result=="LOSS").sum()); p=int((bets.result=="PUSH").sum())
     winp=w/(w+l)*100 if (w+l) else 0; roi=(w*0.9091-l)/(w+l)*100 if (w+l) else 0; units=w*0.9091-l
     clvp=(bets.clv=="+").mean()*100 if len(bets) else 0
@@ -520,6 +566,7 @@ def render_track():
     with fcol:
         with st.popover("🔎  Filter bets"):
             st.selectbox("Season",seasons,key="tr_season")
+            st.selectbox("Week",weeks_tr,key="tr_week")
             st.selectbox("Bets",["All bets (≥3)","Strong only (≥5)","Leans only (3–5)"],key="tr_tier")
             st.selectbox("Result",["All","Wins","Losses"],key="tr_result")
             st.selectbox("Side",["Both","Overs only","Unders only"],key="tr_side")
