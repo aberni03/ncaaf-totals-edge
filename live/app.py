@@ -529,12 +529,12 @@ def render_board():
     lcon=int(((bettable.abs_edge>=3)&(bettable.abs_edge<5)&(bettable.move>=1)).sum())
     st.session_state.setdefault("bd_subset",["All games"]); st.session_state.setdefault("bd_subset_prev",["All games"])
     kc=st.columns(3)
-    kc[0].button(f"{len(bettable)}\n\nUpcoming Games\n\nshow all games", key="kpi_all",
-                 on_click=_kpi_pick, args=("All games",), use_container_width=True, help="Click to clear the filter")
-    kc[1].button(f"{nstrong}\n\nStrong Edge ★\n\n✓ {scon} market-confirmed", key="kpi_strong",
-                 on_click=_kpi_pick, args=("Strong Edge ★",), use_container_width=True, help="Click to show only Strong Edge games")
-    kc[2].button(f"{nlean}\n\nEdge\n\n✓ {lcon} market-confirmed", key="kpi_lean",
-                 on_click=_kpi_pick, args=("Edge",), use_container_width=True, help="Click to show only Edge games")
+    kc[0].button(f"{len(bettable)}\n\nUpcoming Games", key="kpi_all",
+                 on_click=_kpi_pick, args=("All games",), use_container_width=True)
+    kc[1].button(f"{nstrong}\n\nStrong Edge ★", key="kpi_strong",
+                 on_click=_kpi_pick, args=("Strong Edge ★",), use_container_width=True)
+    kc[2].button(f"{nlean}\n\nEdge", key="kpi_lean",
+                 on_click=_kpi_pick, args=("Edge",), use_container_width=True)
     st.markdown("<div style='height:6px'></div>",unsafe_allow_html=True)
     # ---- filter bubbles (just above the games): Show subset · Side ----
     st.session_state.setdefault("bd_subset_prev",["All games"])
