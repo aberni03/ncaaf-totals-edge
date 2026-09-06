@@ -488,7 +488,7 @@ def render_board():
     cc=st.columns([1,2,1.5])
     with cc[0]: wk=st.selectbox("Week",weeks,index=weeks.index(cur) if cur in weeks else 0)
     st.session_state.setdefault("bd_subset_prev",["All games"])
-    with cc[1]: subset=st.pills("Show",["All games","Edge","Strong Edge ★"],selection_mode="multi",default=["All games"],key="bd_subset",on_change=_subset_cb)
+    with cc[1]: subset=st.pills("Show",["All games","Edge","Strong Edge ★"],selection_mode="multi",default=["All games"],key="bd_subset",on_change=_subset_cb,label_visibility="collapsed")
     with cc[2]: side_sel=st.pills("Side",["Both","Overs","Unders"],default="Both",key="bd_side",label_visibility="collapsed")
     # ---- build the board ----
     now=datetime.now(timezone.utc)
