@@ -323,8 +323,7 @@ def equity_chart(cdf, color, start):
         opacity=alt.condition(hover,alt.value(1),alt.value(0)),size=alt.condition(hover,alt.value(80),alt.value(0)),
         tooltip=[alt.Tooltip("Balance:Q",title="Bankroll",format="$,.0f"),alt.Tooltip("Net:Q",title="Net P&L",format="+$,.0f")]).add_params(hover)
     return (area+base+vr+pts).properties(height=178,background="transparent",
-        padding={"left":10,"right":12,"top":10,"bottom":4},
-        autosize=alt.AutoSizeParams(type="fit",contains="padding")).configure_view(strokeWidth=0)
+        padding={"left":8,"right":12,"top":10,"bottom":4}).configure_view(strokeWidth=0)
 
 def bankroll_card(track, compact=False):
     if track is None or len(track)==0: return
