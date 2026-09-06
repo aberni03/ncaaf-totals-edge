@@ -50,15 +50,12 @@ div[data-testid="stVerticalBlockBorderWrapper"]{background:linear-gradient(120de
 .bank.flat{background:none!important;border:0!important;border-radius:0!important;padding:0!important;margin:0!important;} .bank.flat:before{display:none;}
 div[data-testid="stPopover"] button{padding:2px 9px!important;min-height:0!important;font-size:14px!important;}
 div[data-testid="stVerticalBlockBorderWrapper"] div[data-testid="stPopover"]{display:flex;justify-content:flex-end;}
-/* clickable KPI cards (board) — native buttons styled to look like the stat cards */
-div[class*="st-key-kpi_"] button{background:linear-gradient(160deg,#101b32,#0b1220)!important;border:1px solid #22314f!important;border-radius:14px!important;min-height:96px!important;padding:10px 8px!important;display:flex!important;flex-direction:column!important;justify-content:center!important;gap:0!important;transition:border-color .15s,transform .05s;}
-div[class*="st-key-kpi_"] button:hover{border-color:#3a5488!important;}
-div[class*="st-key-kpi_"] button:active{transform:translateY(1px);}
-div[class*="st-key-kpi_"] button p{margin:0!important;line-height:1.16;white-space:normal!important;text-align:center;}
-div[class*="st-key-kpi_"] button p:nth-of-type(1){font-size:30px;font-weight:900;color:#eef3fc;}
-div[class*="st-key-kpi_"] button p:nth-of-type(2){font-size:12.5px;font-weight:700;color:#c7d2ea;letter-spacing:.3px;}
-div[class*="st-key-kpi_"] button p:nth-of-type(3){font-size:11px;color:#8aa0c6;font-weight:600;margin-top:2px!important;}
-.st-key-kpi_strong button p:nth-of-type(1){color:#19e59b;}
+/* clickable KPI cards (board): keep the pretty card, overlay a transparent full-size button */
+div[data-testid="stColumn"]:has([class*="st-key-kpi_"]),div[data-testid="column"]:has([class*="st-key-kpi_"]){position:relative;}
+[class*="st-key-kpi_"]{position:absolute;inset:0;z-index:4;margin:0!important;}
+[class*="st-key-kpi_"] button{width:100%;height:100%;min-height:100%;opacity:0;cursor:pointer;padding:0!important;border:0!important;}
+div[data-testid="stColumn"]:has([class*="st-key-kpi_"]):hover .kpi,div[data-testid="column"]:has([class*="st-key-kpi_"]):hover .kpi{border-color:#3a5488;}
+.kpi{cursor:pointer;} .kpi.sel{border-color:#19e59b!important;box-shadow:0 0 0 1px rgba(25,229,155,.35) inset;}
 .wkrec{border-radius:12px;padding:10px 16px;margin:2px 0 4px;font-size:14px;font-weight:700;text-align:center;}
 .wkrec.win{background:linear-gradient(90deg,rgba(25,229,155,.20),rgba(56,214,255,.08));border:1px solid #1f7a5a;color:#d6f7ec;}
 .wkrec.loss{background:rgba(255,77,115,.12);border:1px solid #5c2130;color:#f3c0cc;}
@@ -528,13 +525,16 @@ def render_board():
     scon=int(((bettable.abs_edge>=5)&(bettable.move>=1)).sum())
     lcon=int(((bettable.abs_edge>=3)&(bettable.abs_edge<5)&(bettable.move>=1)).sum())
     st.session_state.setdefault("bd_subset",["All games"]); st.session_state.setdefault("bd_subset_prev",["All games"])
+    _cur=st.session_state.get("bd_subset") or ["All games"]
+    _sa="Strong Edge ★" in _cur; _la="Edge" in _cur; _aa=not (_sa or _la)
+    def _kpi(col,num,label,ncls,key,val,sel):
+        with col:
+            st.markdown(f'<div class="kpi{" sel" if sel else ""}"><div class="n {ncls}">{num}</div><div class="l">{label}</div></div>',unsafe_allow_html=True)
+            st.button(" ",key=key,on_click=_kpi_pick,args=(val,),use_container_width=True)
     kc=st.columns(3)
-    kc[0].button(f"{len(bettable)}\n\nUpcoming Games", key="kpi_all",
-                 on_click=_kpi_pick, args=("All games",), use_container_width=True)
-    kc[1].button(f"{nstrong}\n\nStrong Edge ★", key="kpi_strong",
-                 on_click=_kpi_pick, args=("Strong Edge ★",), use_container_width=True)
-    kc[2].button(f"{nlean}\n\nEdge", key="kpi_lean",
-                 on_click=_kpi_pick, args=("Edge",), use_container_width=True)
+    _kpi(kc[0],len(bettable),"Upcoming Games","","kpi_all","All games",_aa)
+    _kpi(kc[1],nstrong,"Strong Edge ★","g","kpi_strong","Strong Edge ★",_sa)
+    _kpi(kc[2],nlean,"Edge","","kpi_lean","Edge",_la)
     st.markdown("<div style='height:6px'></div>",unsafe_allow_html=True)
     # ---- filter bubbles (just above the games): Show subset · Side ----
     st.session_state.setdefault("bd_subset_prev",["All games"])
