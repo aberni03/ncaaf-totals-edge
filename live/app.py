@@ -46,7 +46,7 @@ CSS="""
 .bank.compact{padding:12px 22px;grid-template-columns:minmax(180px,auto) 1fr;gap:20px;margin:2px 0 14px;}
 .bank.compact:before{display:none;} .bank.compact .bal{font-size:26px;}
 .bank-hdr{color:var(--mut);font-size:12px;letter-spacing:.4px;font-weight:600;padding-top:6px;} .bank-hdr .spanlbl{color:#c7d2ea;}
-div[data-testid="stVerticalBlockBorderWrapper"]{background:linear-gradient(120deg,#122748,#0b1424);border:1px solid #24365d!important;border-radius:18px;padding:12px 20px 8px!important;margin:2px 0 14px;position:relative;overflow:hidden;}
+div[data-testid="stVerticalBlockBorderWrapper"]{background:linear-gradient(120deg,#122748,#0b1424);border:1px solid #24365d!important;border-radius:18px;padding:12px 20px 8px!important;margin:2px 0 14px;position:relative;}
 .bank.flat{background:none!important;border:0!important;border-radius:0!important;padding:0!important;margin:0!important;} .bank.flat:before{display:none;}
 div[data-testid="stPopover"] button{padding:2px 9px!important;min-height:0!important;font-size:14px!important;}
 .wkrec{border-radius:12px;padding:10px 16px;margin:2px 0 4px;font-size:14px;font-weight:700;text-align:center;}
@@ -299,30 +299,28 @@ def _bk_compute(track):
         else: break
     streak=f'🔥 W{stk}' if r0=="WIN" else (f'🧊 L{stk}' if r0=="LOSS" else "—")
     l10=list(dec.result)[-10:]
-    chart_df=pd.DataFrame({"idx":range(1,len(b)+1),"dt":b["_dt"].values,"Balance":cum.values,"Net":cum.values-start})
+    cv=cum.values; dts=b["_dt"].values; nb=len(b)          # downsample the curve so Vega renders fast (2500+ pts choke the browser)
+    step=max(1,nb//200); keep=list(range(0,nb,step))
+    if keep and keep[-1]!=nb-1: keep.append(nb-1)
+    chart_df=pd.DataFrame({"idx":range(1,len(keep)+1),"dt":dts[keep],"Balance":cv[keep],"Net":cv[keep]-start})
     return dict(basis=basis,unit=unit,start=start,scope=scope,week=week,curve=curve,bal=bal,net=net,roi=roi,winp=winp,
                 w=w,l=l,p=p,streak=streak,scls="hot" if r0=="WIN" else "cold",
                 l10w=l10.count("WIN"),l10n=len(l10),nbets=len(dec),chart_df=chart_df)
 
 def equity_chart(cdf, color, start):
-    hover=alt.selection_point(fields=["idx"],nearest=True,on="mouseover",empty=False)
+    # static curve only — no interactive hover layer (it choked the browser). ~200 downsampled points.
     oneyr=cdf["dt"].notna().any() and (cdf["dt"].max()-cdf["dt"].min()).days<300
     xs=alt.X("dt:T",axis=alt.Axis(title=None,format=("%b" if oneyr else "%Y"),
         tickCount=({"interval":"month","step":1} if oneyr else {"interval":"year","step":1}),
         grid=False,domain=False,labelColor="#7e8db0",labelFontSize=10,tickColor="#1e2c47",labelPadding=2))
-    order=alt.Order("idx:Q")
     ys=alt.Y("Balance:Q",scale=alt.Scale(zero=False,nice=True),
         axis=alt.Axis(title=None,format="$,.0f",tickCount=4,grid=True,gridColor="#1e2c47",domain=False,
                       labelColor="#7e8db0",labelFontSize=10,tickColor="#1e2c47",labelPadding=4))
     area=alt.Chart(cdf).mark_area(interpolate="monotone",line={"color":color,"strokeWidth":2.5},
         color=alt.Gradient(gradient="linear",x1=1,x2=1,y1=0,y2=1,
-            stops=[alt.GradientStop(color=color,offset=0),alt.GradientStop(color="#0b1020",offset=1)])).encode(x=xs,y=ys,order=order)
+            stops=[alt.GradientStop(color=color,offset=0),alt.GradientStop(color="#0b1020",offset=1)])).encode(x=xs,y=ys,order=alt.Order("idx:Q"))
     base=alt.Chart(pd.DataFrame({"y":[start]})).mark_rule(color="#33415f",strokeDash=[4,4]).encode(y="y:Q")
-    vr=alt.Chart(cdf).mark_rule(color="#4a5a7f").encode(x=xs,opacity=alt.condition(hover,alt.value(0.7),alt.value(0)))
-    pts=alt.Chart(cdf).mark_circle(color=color).encode(x=xs,y=ys,
-        opacity=alt.condition(hover,alt.value(1),alt.value(0)),size=alt.condition(hover,alt.value(80),alt.value(0)),
-        tooltip=[alt.Tooltip("Balance:Q",title="Bankroll",format="$,.0f"),alt.Tooltip("Net:Q",title="Net P&L",format="+$,.0f")]).add_params(hover)
-    return (area+base+vr+pts).properties(height=178,background="transparent",
+    return (area+base).properties(height=178,background="transparent",
         padding={"left":8,"right":12,"top":10,"bottom":4}).configure_view(strokeWidth=0)
 
 def bankroll_card(track, compact=False):
