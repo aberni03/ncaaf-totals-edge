@@ -241,6 +241,15 @@ BK_DEFAULTS={"bk_basis":"All bets (≥3)","bk_unit":100,"bk_start":10000,"bk_sco
 def _read_bk(): return tuple(st.session_state.get(k,v) for k,v in BK_DEFAULTS.items())
 def _reset_bk():
     for k,v in BK_DEFAULTS.items(): st.session_state[k]=v   # callback runs before widgets re-instantiate
+def _subset_cb():
+    # "All games" is mutually exclusive with Edge/Strong. Infer what was just clicked vs prev state.
+    new=list(st.session_state.get("bd_subset") or [])
+    prev=st.session_state.get("bd_subset_prev",["All games"])
+    added=[x for x in new if x not in prev]
+    if "All games" in added: new=["All games"]           # clicked All games -> clear the others
+    elif added: new=[x for x in new if x!="All games"]    # clicked Edge/Strong -> drop All games
+    if not new: new=["All games"]                          # nothing selected -> fall back to All games
+    st.session_state.bd_subset=new; st.session_state.bd_subset_prev=new
 def _reset_tr():
     ds=str(int(track.season.max())) if (track is not None and len(track)) else "All"   # default = current season
     for k,v in {"tr_season":ds,"tr_tier":"All bets (≥3)","tr_result":"All","tr_side":"Both","tr_clv":"All CLV","tr_week":"All weeks"}.items():
@@ -255,7 +264,6 @@ def bankroll_settings():
         cA,cB=st.columns(2)
         cA.number_input("$ per bet (flat)",min_value=10,max_value=100000,step=10,key="bk_unit")
         cB.number_input("Starting bankroll $",min_value=0,max_value=10000000,step=500,key="bk_start")
-        st.caption(f"Stake **${int(st.session_state.bk_unit):,}**/bet · Starting bankroll **${int(st.session_state.bk_start):,}**")
         cE,cF=st.columns(2)
         with cE: st.selectbox("Span",["All time","2026 season only"],key="bk_scope")
         with cF: st.selectbox("Week",wkopts,key="bk_week")
@@ -479,8 +487,9 @@ def render_board():
     weeks=sorted(slate.week.dropna().unique()); cur=meta.get("current_week", weeks[0] if weeks else 1)
     cc=st.columns([1,2,1.5])
     with cc[0]: wk=st.selectbox("Week",weeks,index=weeks.index(cur) if cur in weeks else 0)
-    with cc[1]: subset=st.pills("Show (none = all games)",["Edge","Strong Edge ★"],selection_mode="multi",default=[],key="bd_subset")
-    with cc[2]: side_sel=st.pills("Side",["Both","Overs","Unders"],default="Both",key="bd_side")
+    st.session_state.setdefault("bd_subset_prev",["All games"])
+    with cc[1]: subset=st.pills("Show",["All games","Edge","Strong Edge ★"],selection_mode="multi",default=["All games"],key="bd_subset",on_change=_subset_cb)
+    with cc[2]: side_sel=st.pills("Side",["Both","Overs","Unders"],default="Both",key="bd_side",label_visibility="collapsed")
     # ---- build the board ----
     now=datetime.now(timezone.utc)
     def _kicked(iso):
