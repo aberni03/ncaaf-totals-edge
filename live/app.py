@@ -151,6 +151,11 @@ div[role="radiogroup"]{gap:6px;} div[role="radiogroup"] label{background:var(--c
   div[data-testid="stHorizontalBlock"]{flex-wrap:wrap!important;gap:6px!important;}
   div[data-testid="stHorizontalBlock"]>div[data-testid="column"]{flex:1 1 46%!important;min-width:46%!important;max-width:49%!important;}
   .kpi{padding:8px 10px;} .kpi .n{font-size:19px;} .kpi .l{font-size:9px;letter-spacing:.3px;margin-top:2px;}
+  /* board KPIs: keep all three on one row (no overlap) on mobile */
+  div[data-testid="stHorizontalBlock"]:has([class*="st-key-kpi_"])>div[data-testid="column"]{flex:1 1 31%!important;min-width:31%!important;max-width:33%!important;}
+  /* bankroll: float the settings gear to the top-right corner so it doesn't overlap the label */
+  div[data-testid="stVerticalBlockBorderWrapper"] div[data-testid="stPopover"]{position:absolute!important;top:6px;right:10px;z-index:7;width:auto!important;}
+  div[data-testid="stVerticalBlockBorderWrapper"] div[data-testid="stHorizontalBlock"]:has([data-testid="stPopover"])>div[data-testid="column"]{flex:1 1 100%!important;max-width:100%!important;min-width:100%!important;}
   /* keep the green buttons, just make them compact on mobile */
   .stButton button{font-size:11.5px!important;padding:4px 9px!important;min-height:0!important;}
   .hero h1{font-size:24px;} .hero{padding:16px 18px;}
@@ -164,17 +169,19 @@ div[role="radiogroup"]{gap:6px;} div[role="radiogroup"] label{background:var(--c
   .tcards{grid-template-columns:1fr;}
   .bank,.bank.compact{grid-template-columns:1fr;gap:12px;}
   .bank .rgt{order:2;}
-  /* track record: stack each bet into 2 tidy lines on mobile so nothing gets cut off */
+  /* track record: show EVERY field with a small label so nothing is hidden or cut off on mobile */
   .thead{display:none;}
-  .trow{grid-template-columns:auto 1fr auto!important;grid-template-areas:"dt mt res" "bet ln clv"!important;gap:4px 8px!important;font-size:11.5px;padding:9px 14px;align-items:center;}
-  .trow>*:nth-child(1){grid-area:dt;}
-  .trow>*:nth-child(2){grid-area:mt;}
-  .trow>*:nth-child(3){grid-area:ln;font-size:10.5px;}
-  .trow>*:nth-child(4){display:none;}
-  .trow>*:nth-child(5){grid-area:bet;justify-self:start;}
-  .trow>*:nth-child(6){grid-area:res;justify-self:end;}
-  .trow>*:nth-child(7){display:none;}
-  .trow>*:nth-child(8){grid-area:clv;justify-self:end;}
+  .trow{display:grid!important;grid-template-columns:1fr 1fr!important;gap:5px 12px!important;font-size:11.5px!important;padding:11px 14px!important;align-items:baseline;}
+  .trow>*{display:block!important;text-align:left!important;justify-self:start!important;white-space:normal!important;}
+  .trow>*:nth-child(1){grid-column:1/-1;color:#7e8db0;font-size:10.5px;}
+  .trow>*:nth-child(2){grid-column:1/-1;font-size:13px;}
+  .trow>*:nth-child(3){grid-column:1/-1;}
+  .trow>*:nth-child(3)::before{content:"Open · Close · Proj   ";color:#7e8db0;}
+  .trow>*:nth-child(4)::before{content:"Edge  ";color:#7e8db0;font-weight:600;}
+  .trow>*:nth-child(5)::before{content:"Bet  ";color:#7e8db0;font-weight:600;}
+  .trow>*:nth-child(6)::before{content:"Result  ";color:#7e8db0;font-weight:600;}
+  .trow>*:nth-child(7)::before{content:"Margin  ";color:#7e8db0;font-weight:600;}
+  .trow>*:nth-child(8)::before{content:"CLV  ";color:#7e8db0;font-weight:600;}
 }
 </style>
 """
