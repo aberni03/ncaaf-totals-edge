@@ -17,6 +17,8 @@ def get(p,**q):
     for a in range(4):
         r=requests.get(B+p,params=q,headers=H,timeout=90)
         if r.status_code==200: return r.json()
+        if r.status_code==429:   # quota exhausted — retrying won't help, bail fast instead of buffering
+            raise SystemExit("CFBD monthly call quota exceeded — results/stats/lines can't update until the monthly reset. Live odds (board totals) still work.")
         time.sleep(2)
     return []
 
