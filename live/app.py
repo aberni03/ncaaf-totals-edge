@@ -60,9 +60,40 @@ div[data-testid="stColumn"]:has([class*="st-key-kpi_"]):hover .kpi,div[data-test
 .why{background:linear-gradient(160deg,#10233f,#0b1526);border:1px solid #26406a;border-radius:12px;padding:12px 15px;margin:0 0 14px;}
 .why .whyh{font-weight:800;color:#eef3fc;font-size:13px;letter-spacing:.5px;margin-bottom:7px;text-transform:uppercase;}
 .why ul{margin:0;padding-left:17px;} .why li{color:#c7d2ea;font-size:12.5px;line-height:1.55;margin:4px 0;} .why li b{color:#eef3fc;font-weight:700;}
+/* ---- rekt-style theming (TEST) ---- */
+.ticker{overflow:hidden;white-space:nowrap;border-top:1px solid #17233b;border-bottom:1px solid #17233b;padding:9px 0;margin:6px 0;}
+.ticker .trk{display:inline-block;white-space:nowrap;animation:tick 55s linear infinite;}
+.ticker:hover .trk{animation-play-state:paused;}
+.ticker .ti{display:inline-block;padding:0 26px;font-size:13px;color:#e7edf7;font-weight:700;}
+.ticker .ti .lbl{color:#6f7f9e;font-size:11px;letter-spacing:1.2px;text-transform:uppercase;margin-right:8px;font-weight:700;}
+.ticker .ti b{font-weight:800;} .ticker .up{color:#19e59b;} .ticker .dn{color:#ff4d73;}
+@keyframes tick{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.dateline{color:#6f7f9e;font-size:12px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;padding:12px 2px 6px;} .dateline b{color:#c7d2ea;}
+.hdrbar{overflow:auto;margin-bottom:2px;}
+.brand{font-size:20px;font-weight:900;letter-spacing:-.3px;color:#eef3fc;padding:2px 0 0;}
+.brand .ac{background:linear-gradient(90deg,var(--grn),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.brand .pro{font-size:11px;font-weight:800;color:#4a5a7f;letter-spacing:2px;margin-left:5px;}
+.tag{color:#6f7f9e;font-size:12.5px;margin:2px 0;}
+.st-key-refresh_btn button{background:transparent!important;border:1px solid #2a3a5c!important;color:#9fb0d0!important;font-size:12px!important;font-weight:700!important;padding:5px 12px!important;min-height:0!important;border-radius:8px!important;}
+.st-key-refresh_btn button:hover{border-color:#19e59b!important;color:#eef3fc!important;}
+.loginbtn{float:right;text-align:center;border:1px solid #2a3a5c;border-radius:9px;padding:6px 16px;color:#9fb0d0;font-size:12.5px;font-weight:800;background:transparent;margin-top:4px;line-height:1.2;cursor:default;}
+.loginbtn span{display:block;font-size:8.5px;color:#4a5a7f;letter-spacing:1.2px;text-transform:uppercase;font-weight:700;margin-top:1px;}
+/* rekt-style bankroll stat strip */
+.bkrow{display:flex;align-items:flex-end;flex-wrap:wrap;gap:8px 0;margin:8px 0 12px;}
+.bkrow .bkcell{padding:2px 22px;border-right:1px solid #1c2942;}
+.bkrow .bkcell:first-child{padding-left:2px;} .bkrow .bkcell:last-child{border-right:0;}
+.bkrow .bl{color:#6f7f9e;font-size:10.5px;letter-spacing:1px;text-transform:uppercase;font-weight:700;margin-bottom:4px;}
+.bkrow .bv{font-size:19px;font-weight:800;color:#eef3fc;line-height:1;} .bkrow .bv.big{font-size:31px;font-weight:900;letter-spacing:-.5px;}
+.bkrow .bv.g{color:var(--grn);} .bkrow .bv.r{color:var(--red);}
+button[data-baseweb="tab"]{font-size:15px!important;font-weight:800!important;letter-spacing:.6px;text-transform:uppercase;color:#6f7f9e!important;padding:8px 2px!important;}
+button[data-baseweb="tab"]:hover{color:#c7d2ea!important;}
+button[data-baseweb="tab"][aria-selected="true"]{color:#eef3fc!important;}
+div[data-baseweb="tab-list"]{gap:30px!important;border-bottom:1px solid #17233b;margin-bottom:12px;}
+div[data-baseweb="tab-highlight"]{background:#19e59b!important;height:2.5px!important;}
+div[data-baseweb="tab-border"]{display:none!important;}
 .wkrec{border-radius:12px;padding:10px 16px;margin:2px 0 4px;font-size:14px;font-weight:700;text-align:center;}
 .wkrec.win{background:linear-gradient(90deg,rgba(25,229,155,.20),rgba(56,214,255,.08));border:1px solid #1f7a5a;color:#d6f7ec;}
-.wkrec.loss{background:rgba(255,77,115,.12);border:1px solid #5c2130;color:#f3c0cc;}
+.wkrec.loss{background:rgba(255,180,84,.10);border:1px solid #5c4a21;color:#f3e6cf;}
 .wkrec.even{background:#141d33;border:1px solid var(--line);color:#c7d2ea;}
 .wkrec b{color:#fff;} .wkrec .wkn{color:var(--mut);font-weight:600;font-size:12px;} .wkrec .wkbest{color:var(--grn);font-weight:800;}
 .kpi{background:linear-gradient(160deg,var(--card),var(--card2));border:1px solid var(--line);border-radius:16px;padding:15px 18px;}
@@ -152,6 +183,16 @@ div[role="radiogroup"]{gap:6px;} div[role="radiogroup"] label{background:var(--c
 @media (max-width:680px){
   .block-container{padding-left:.7rem;padding-right:.7rem;}
   div[data-testid="stHorizontalBlock"]{flex-wrap:wrap!important;gap:6px!important;}
+  /* rekt-theme mobile tuning */
+  .brand{font-size:17px;} .tag{font-size:11px;} .loginbtn{padding:5px 11px;font-size:11px;}
+  .ticker .ti{padding:0 15px;font-size:12px;} .ticker .ti .lbl{font-size:9.5px;letter-spacing:.8px;}
+  .dateline{font-size:9.5px;letter-spacing:.5px;padding:8px 2px 4px;}
+  button[data-baseweb="tab"]{font-size:13px!important;letter-spacing:.3px;padding:6px 2px!important;}
+  div[data-baseweb="tab-list"]{gap:16px!important;}
+  .st-key-refresh_btn button{font-size:11px!important;padding:5px 8px!important;}
+  .bkrow .bkcell{flex:1 1 30%!important;border-right:0!important;padding:4px 4px!important;}
+  .bkrow .bkcell:first-child{flex:1 1 100%!important;}
+  .bkrow .bv{font-size:16px;} .bkrow .bv.big{font-size:26px;} .bkrow .bl{font-size:9.5px;}
   div[data-testid="stHorizontalBlock"]>div[data-testid="column"]{flex:1 1 46%!important;min-width:46%!important;max-width:49%!important;}
   .kpi{padding:8px 10px;} .kpi .n{font-size:19px;} .kpi .l{font-size:9px;letter-spacing:.3px;margin-top:2px;}
   /* board KPIs: keep all three on one row (no overlap) on mobile — keyed container, no :has() */
@@ -201,11 +242,6 @@ slate,meta,track=load()
 
 _gen=meta.get("generated","—") if meta else "—"
 _tstamp=_gen.split(" ",1)[1] if (isinstance(_gen,str) and " " in _gen) else _gen
-c1,c2=st.columns([3.3,1])
-with c1:
-    st.markdown('<div class="hero"><h1>🏈 CFB Totals <span class="ac">Edge</span></h1>'
-      '<div class="sub">Model-powered over/under picks for college football — catch soft opening lines before they move.</div></div>',
-      unsafe_allow_html=True)
 def run_job(script, label, args=None):
     try:
         with st.spinner(f"{label}… (usually ~15–40s)"):
@@ -218,19 +254,63 @@ def run_job(script, label, args=None):
     else:
         st.session_state["_msg"]=("err",f"⚠️ {label} failed:\n{(r.stderr or r.stdout)[-600:]}")
 
-with c2:
-    st.markdown(f'<div class="stamp">⟳ updated {_tstamp} · <b>{meta.get("requests_remaining","—") if meta else "—"}</b> credits</div>',unsafe_allow_html=True)
-    if meta and meta.get("cfbd_ok") is False:
-        st.markdown('<div class="stamp" style="color:#ffb454">⚠ CFBD monthly quota hit — openers/AP/TV paused; live totals still update</div>',unsafe_allow_html=True)
-    if st.button("🔄  Refresh", use_container_width=True,
-                 help="One tap: live lines (this week + next), box scores for completed games → ratings, then re-grade the Track Record & re-project the board. Uses 1 odds credit."):
-        run_job("weekly_update.py","Refreshing lines + results")
+st.markdown('<div class="hdrbar"><div class="loginbtn">🔒 Log in<span>coming soon</span></div>'
+            '<div class="brand">🏈 CFB Totals <span class="ac">Edge</span> <span class="pro">MODEL</span></div>'
+            '<div class="tag">Model-powered over/under picks — catch soft opening lines before they move.</div></div>',
+            unsafe_allow_html=True)
 
 if st.session_state.get("_msg"):
     kind,txt=st.session_state.pop("_msg")
     (st.success if kind=="ok" else st.error)(txt)
 
-nav=st.radio("nav",["📋 This Week's Board","📈 Track Record"],horizontal=True,label_visibility="collapsed")
+def render_ticker():
+    """Scrolling stock-ticker of the model's recent form + this week's board."""
+    def wl(df):
+        d=df[df.result.isin(["WIN","LOSS"])]; return int((d.result=="WIN").sum()), int((d.result=="LOSS").sum())
+    def roi(w,l): return (w*0.9091-l)/(w+l)*100 if (w+l) else 0.0
+    def chip(lbl,val,cls=""): return f'<span class="ti"><span class="lbl">{lbl}</span><b class="{cls}">{val}</b></span>'
+    items=[]
+    if track is not None and len(track):
+        b=track[track.rec.isin(["OVER","UNDER"]) & track.tier.isin(["STRONG","LEAN"])].copy()
+        b["_dt"]=pd.to_datetime(b.date,format="%m/%d/%y",errors="coerce"); b=b.sort_values("_dt")
+        cw=meta.get("current_week") if meta else None
+        # ---- CURRENT WEEK (settled so far + upcoming board) ----
+        if cw is not None:
+            cww,cwl=wl(b[(b.season==2026)&(b.week==cw)])
+            if cww+cwl: items.append(chip(f"Wk {cw} so far",f"{cww}-{cwl}","up" if cww>=cwl else "dn"))
+            if slate is not None and len(slate):
+                up=slate[(slate.week==cw)&(slate.actual_total.isna())]
+                if len(up): items.append(chip(f"Wk {cw} board",f"{int((up.abs_edge>=5).sum())} Strong ★ · {int(((up.abs_edge>=3)&(up.abs_edge<5)).sum())} Edge"))
+        # ---- 2026 SEASON ----
+        s26=b[b.season==2026]; w2,l2=wl(s26)
+        if w2+l2:
+            items.append(chip("2026 record",f"{w2}-{l2}","up" if w2>=l2 else "dn"))
+            items.append(chip("2026 ROI",f"{roi(w2,l2):+.0f}%","up" if roi(w2,l2)>=0 else "dn"))
+        # ---- ALL-TIME (2020–present) ----
+        w,l=wl(b); r=roi(w,l)
+        items.append(chip("All-time record",f"{w:,}-{l:,}"))
+        items.append(chip("All-time ROI",f"{r:+.1f}%","up" if r>=0 else "dn"))
+        dec=b[b.result.isin(["WIN","LOSS"])]; w10,l10=wl(dec.tail(10))
+        items.append(chip("Last 10 bets",f"{w10}-{l10}","up" if w10>=l10 else "dn"))
+        for nm,sub in [("All-time unders",b[b.rec=="UNDER"]),("All-time strong ★",b[b.tier=="STRONG"])]:
+            ww,ll=wl(sub)
+            if ww+ll>=10: items.append(chip(nm,f"{ww:,}-{ll:,} · {roi(ww,ll):+.0f}%","up" if roi(ww,ll)>=0 else "dn"))
+        if "clv" in b.columns and len(b): items.append(chip("All-time beat close",f"{(b.clv=='+').mean()*100:.0f}%"))
+    if not items: return
+    row="".join(items)
+    st.markdown(f'<div class="ticker"><div class="trk">{row}{row}</div></div>',unsafe_allow_html=True)
+render_ticker()
+
+_dl,_db=st.columns([5,1])
+with _dl:
+    _cr=f' &nbsp;·&nbsp; <b>{meta.get("requests_remaining","—")}</b> credits' if meta else ""
+    _warn=' &nbsp;·&nbsp; <span style="color:#ffb454">⚠ CFBD quota hit</span>' if (meta and meta.get("cfbd_ok") is False) else ""
+    st.markdown(f'<div class="dateline">{datetime.now().strftime("%A, %B %-d, %Y").upper()} &nbsp;·&nbsp; updated <b>{_tstamp}</b>{_cr}{_warn}</div>',unsafe_allow_html=True)
+with _db:
+    if st.button("↻ Refresh", key="refresh_btn", use_container_width=True,
+                 help="Live lines (this week + next) + box scores for completed games, then re-grade & re-project. ~1 odds credit."):
+        run_job("weekly_update.py","Refreshing lines + results")
+nav_tabs=st.tabs(["This Week's Board","Track Record"])
 
 def fnum(x): return "—" if (x is None or (isinstance(x,float) and np.isnan(x))) else f"{x:.1f}"
 def sp(x):
@@ -401,19 +481,22 @@ def bankroll_block(compact=False):
         span=("All-Time" if d["scope"].startswith("All") else d["scope"])+("" if d["week"]=="All weeks" else f" · {d['week']}")
         with hl: st.markdown(f'<div class="bank-hdr">MODEL BANKROLL · <b class="spanlbl">{span}</b> · ${d["unit"]:,}/bet</div>',unsafe_allow_html=True)
         net=d["net"]; color="#19e59b" if net>=0 else "#ff4d73"; gcls="g" if net>=0 else "r"
-        bignet=f'Net {"+" if net>=0 else "−"}${abs(net):,.0f}'   # always Net P&L, whatever the starting bankroll
-        if compact:                            # board & track record now render the SAME chart (with axes)
-            stats=(f'<div class="lft"><div class="bal {gcls}">{bignet}</div>'
+        netval=f'{"+" if net>=0 else "−"}${abs(net):,.0f}'
+        if compact:
+            stats=(f'<div class="lft"><div class="bal {gcls}">Net {netval}</div>'
               f'<div class="sub">{d["winp"]:.0f}% win · {d["roi"]:+.1f}% ROI · {d["nbets"]:,} bets</div></div>')
-        else:
-            stats=(f'<div class="lft"><div class="bal {gcls}">{bignet}</div>'
-              f'<div class="sub">{d["winp"]:.1f}% win · ROI {d["roi"]:+.1f}% · {d["nbets"]:,} bets</div>'
-              f'<div class="chips"><span class="chip">{d["w"]:,}-{d["l"]:,}-{d["p"]:,}</span>'
-              f'<span class="chip streak {d["scls"]}">{d["streak"]}</span>'
-              f'<span class="chip">last 10 · {d["l10w"]}-{d["l10n"]-d["l10w"]}</span></div></div>')
-        c1,c2=st.columns([2,3])
-        with c1: st.markdown(f'<div class="bank flat" style="grid-template-columns:1fr;height:100%">{stats}</div>',unsafe_allow_html=True)
-        with c2:
+            c1,c2=st.columns([2,3])
+            with c1: st.markdown(f'<div class="bank flat" style="grid-template-columns:1fr;height:100%">{stats}</div>',unsafe_allow_html=True)
+            with c2:
+                try: st.altair_chart(equity_chart(d["chart_df"],color,d["start"]),use_container_width=True,theme=None)
+                except Exception: st.markdown(f'<div class="bank flat" style="grid-template-columns:1fr">{sparkline(d["curve"],color=color,base=d["start"])}</div>',unsafe_allow_html=True)
+        else:                                   # rekt-style: full-width stat strip that pops, chart below
+            rcls="g" if d["roi"]>=0 else "r"; scls="g" if d["scls"]=="hot" else "r"
+            cells=[("Net P&L",netval,f"big {gcls}"),("ROI",f'{d["roi"]:+.1f}%',rcls),
+                   ("Win rate",f'{d["winp"]:.1f}%',""),("Record",f'{d["w"]:,}-{d["l"]:,}-{d["p"]}',""),
+                   ("Last 10",f'{d["l10w"]}-{d["l10n"]-d["l10w"]}',""),("Streak",d["streak"],scls)]
+            strip="".join(f'<div class="bkcell"><div class="bl">{lb}</div><div class="bv {c}">{v}</div></div>' for lb,v,c in cells)
+            st.markdown(f'<div class="bkrow">{strip}</div>',unsafe_allow_html=True)
             try: st.altair_chart(equity_chart(d["chart_df"],color,d["start"]),use_container_width=True,theme=None)
             except Exception: st.markdown(f'<div class="bank flat" style="grid-template-columns:1fr">{sparkline(d["curve"],color=color,base=d["start"])}</div>',unsafe_allow_html=True)
 
@@ -605,7 +688,7 @@ def render_board():
     # ---- filter bubbles (just above the games): Show subset · Side ----
     st.session_state.setdefault("bd_subset_prev",["All games"])
     fc=st.columns([2,1.5])
-    with fc[0]: subset=st.pills("Show",["All games","Edge","Strong Edge ★"],selection_mode="multi",default=["All games"],key="bd_subset",on_change=_subset_cb,label_visibility="collapsed")
+    with fc[0]: subset=st.pills("Show",["All games","Edge","Strong Edge ★"],selection_mode="multi",key="bd_subset",on_change=_subset_cb,label_visibility="collapsed")
     with fc[1]: side_sel=st.pills("Side",["Both","Overs","Unders"],default="Both",key="bd_side",label_visibility="collapsed")
     # ---- apply filters -> view ----
     view=wkall.copy()
@@ -743,4 +826,5 @@ def render_track():
       'Past results, not a guarantee.</div>',unsafe_allow_html=True)
     render_footer()
 
-render_board() if nav.startswith("📋") else render_track()
+with nav_tabs[0]: render_board()
+with nav_tabs[1]: render_track()
