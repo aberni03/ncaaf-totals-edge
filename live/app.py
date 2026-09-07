@@ -219,12 +219,9 @@ with c2:
     st.markdown(f'<div class="stamp">⟳ updated {_tstamp} · <b>{meta.get("requests_remaining","—") if meta else "—"}</b> credits</div>',unsafe_allow_html=True)
     if meta and meta.get("cfbd_ok") is False:
         st.markdown('<div class="stamp" style="color:#ffb454">⚠ CFBD monthly quota hit — openers/AP/TV paused; live totals still update</div>',unsafe_allow_html=True)
-    if st.button("🔄  Refresh odds", use_container_width=True,
-                 help="Re-pull live lines & re-project with current ratings (1 odds credit). Use Sun–Tue as openers post."):
-        run_job("project_slate.py","Refreshing live odds")
-    if st.button("🔃  Update week results", use_container_width=True,
-                 help="Pull the latest box scores so team ratings update (preseason→live blend), then re-project."):
-        run_job("weekly_update.py","Pulling new results + reprojecting")
+    if st.button("🔄  Refresh", use_container_width=True,
+                 help="One tap: live lines (this week + next), box scores for completed games → ratings, then re-grade the Track Record & re-project the board. Uses 1 odds credit."):
+        run_job("weekly_update.py","Refreshing lines + results")
 
 if st.session_state.get("_msg"):
     kind,txt=st.session_state.pop("_msg")
