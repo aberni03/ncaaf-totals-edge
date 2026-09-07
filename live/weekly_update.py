@@ -35,7 +35,7 @@ pd.concat([gg,pd.DataFrame(gr)],ignore_index=True).to_csv(f"{DATA}/games.csv",in
 done=[x for x in gr if x["completed"]]; cw=max([x["week"] for x in done],default=0)
 print(f"      {len(done)} completed; latest week done = {cw}")
 
-print(f"[2/3] pulling {YR} box scores…")
+print(f"[2/3] pulling {YR} box scores (recent weeks only — saves CFBD calls)…")
 def parse(sl):
     o={}
     for s in sl:
@@ -47,16 +47,22 @@ def parse(sl):
             try: o[c]=float(v)
             except: o[c]=None
     return o
+# only refresh a small window (latest completed week ± 1) instead of all 16 weeks
+lo=max(1,cw-1); hi=min(16,cw+1); weeks=list(range(lo,hi+1))
+jobs=[("regular",w) for w in weeks]+([("postseason",1)] if cw>=15 else [])
 sr=[]
-for st in ("regular","postseason"):
-    for wk in (range(1,17) if st=="regular" else [1]):
-        for g in get("/games/teams",year=YR,week=wk,seasonType=st):
-            for t in g.get("teams",[]):
-                rec=dict(game_id=g["id"],season=YR,week=wk,season_type=st,team=t["team"],home_away=t.get("homeAway"),points=t.get("points")); rec.update(parse(t.get("stats",[])))
-                sr.append(rec)
-ts=pd.read_csv(f"{DATA}/team_game_stats.csv"); ts=ts[ts.season!=YR]
-pd.concat([ts,pd.DataFrame(sr)],ignore_index=True).to_csv(f"{DATA}/team_game_stats.csv",index=False)
-print(f"      {len(sr)} team-game rows refreshed")
+for st,wk in jobs:
+    for g in get("/games/teams",year=YR,week=wk,seasonType=st):
+        for t in g.get("teams",[]):
+            rec=dict(game_id=g["id"],season=YR,week=wk,season_type=st,team=t["team"],home_away=t.get("homeAway"),points=t.get("points")); rec.update(parse(t.get("stats",[])))
+            sr.append(rec)
+new=pd.DataFrame(sr)
+ts=pd.read_csv(f"{DATA}/team_game_stats.csv")
+if len(new):   # replace ONLY the weeks we just pulled; keep every earlier week intact (ratings need full history)
+    key=lambda d:d.season.astype(str)+"|"+d.season_type.astype(str)+"|"+d.week.astype(str)
+    ts=ts[~key(ts).isin(set(key(new)))]
+pd.concat([ts,new],ignore_index=True).to_csv(f"{DATA}/team_game_stats.csv",index=False)
+print(f"      {len(sr)} team-game rows refreshed (weeks {weeks}); {len(jobs)} calls instead of 17")
 
 print(f"[3/5] pulling {YR} betting lines…")
 lrows=[]
