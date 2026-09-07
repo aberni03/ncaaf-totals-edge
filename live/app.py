@@ -189,7 +189,8 @@ div[role="radiogroup"]{gap:6px;} div[role="radiogroup"] label{background:var(--c
   .dateline{font-size:9.5px;letter-spacing:.5px;padding:8px 2px 4px;}
   button[data-baseweb="tab"]{font-size:13px!important;letter-spacing:.3px;padding:6px 2px!important;}
   div[data-baseweb="tab-list"]{gap:16px!important;}
-  .st-key-refresh_btn button{font-size:11px!important;padding:5px 8px!important;}
+  .st-key-refresh_btn button{font-size:11px!important;padding:5px 10px!important;}
+  .st-key-daterow div[data-testid="stColumn"]{flex:1 1 100%!important;max-width:100%!important;min-width:100%!important;}  /* stack date over refresh (no overlap) */
   .bkrow .bkcell{flex:1 1 30%!important;border-right:0!important;padding:4px 4px!important;}
   .bkrow .bkcell:first-child{flex:1 1 100%!important;}
   .bkrow .bv{font-size:16px;} .bkrow .bv.big{font-size:26px;} .bkrow .bl{font-size:9.5px;}
@@ -301,15 +302,16 @@ def render_ticker():
     st.markdown(f'<div class="ticker"><div class="trk">{row}{row}</div></div>',unsafe_allow_html=True)
 render_ticker()
 
-_dl,_db=st.columns([5,1])
-with _dl:
-    _cr=f' &nbsp;·&nbsp; <b>{meta.get("requests_remaining","—")}</b> credits' if meta else ""
-    _warn=' &nbsp;·&nbsp; <span style="color:#ffb454">⚠ CFBD quota hit</span>' if (meta and meta.get("cfbd_ok") is False) else ""
-    st.markdown(f'<div class="dateline">{datetime.now().strftime("%A, %B %-d, %Y").upper()} &nbsp;·&nbsp; updated <b>{_tstamp}</b>{_cr}{_warn}</div>',unsafe_allow_html=True)
-with _db:
-    if st.button("↻ Refresh", key="refresh_btn", use_container_width=True,
-                 help="Live lines (this week + next) + box scores for completed games, then re-grade & re-project. ~1 odds credit."):
-        run_job("weekly_update.py","Refreshing lines + results")
+with st.container(key="daterow"):
+    _dl,_db=st.columns([5,1])
+    with _dl:
+        _cr=f' &nbsp;·&nbsp; <b>{meta.get("requests_remaining","—")}</b> credits' if meta else ""
+        _warn=' &nbsp;·&nbsp; <span style="color:#ffb454">⚠ CFBD quota hit</span>' if (meta and meta.get("cfbd_ok") is False) else ""
+        st.markdown(f'<div class="dateline">{datetime.now().strftime("%A, %B %-d, %Y").upper()} &nbsp;·&nbsp; updated <b>{_tstamp}</b>{_cr}{_warn}</div>',unsafe_allow_html=True)
+    with _db:
+        if st.button("↻ Refresh", key="refresh_btn", use_container_width=True,
+                     help="Live lines (this week + next) + box scores for completed games, then re-grade & re-project. ~1 odds credit."):
+            run_job("weekly_update.py","Refreshing lines + results")
 nav_tabs=st.tabs(["This Week's Board","Track Record"])
 
 def fnum(x): return "—" if (x is None or (isinstance(x,float) and np.isnan(x))) else f"{x:.1f}"
