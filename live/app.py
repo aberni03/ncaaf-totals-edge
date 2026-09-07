@@ -431,28 +431,35 @@ def game_narrative(r, R, rh, ra, app_, hpp):
         T=list(R.values())
         A=lambda k:float(np.mean([t[k] for t in T if t.get(k) is not None]))
         S=lambda k:(lambda sd:sd if sd>1e-6 else 1.0)(float(np.std([t[k] for t in T if t.get(k) is not None])))
-        z=lambda v,k:(v-A(k))/S(k)
+        z=lambda k:((rh[k]-A(k))/S(k)+(ra[k]-A(k))/S(k))/2   # both teams vs FBS average
         pace=(rh["tempo"]+ra["tempo"])/2
         F=[
-          dict(z=(z(rh["tempo"],"tempo")+z(ra["tempo"],"tempo"))/2,
+          dict(z=z("tempo"),
                over=f"<b>Tempo:</b> both play fast (~{pace:.0f} plays/game vs a ~{A('tempo'):.0f} FBS average) — more possessions and scoring chances.",
                under=f"<b>Tempo:</b> both play deliberately (~{pace:.0f} plays/game vs a ~{A('tempo'):.0f} FBS average) — fewer possessions to score."),
-          dict(z=(z(ra["def_ypa"],"def_ypa")+z(rh["def_ypa"],"def_ypa"))/2,
-               over=f"<b>Defenses:</b> both are leaky ({an} ~{ra['def_ypa']:.1f}, {hn} ~{rh['def_ypa']:.1f} yds/pass-att allowed vs a ~{A('def_ypa'):.1f} average) — chunk plays available.",
-               under=f"<b>Defenses:</b> both project well above average ({an} ~{ra['def_ypa']:.1f}, {hn} ~{rh['def_ypa']:.1f} yds/pass-att allowed vs a ~{A('def_ypa'):.1f} average) — offenses get held below their norm."),
-          dict(z=(z(ra["off_ypa"],"off_ypa")+z(rh["off_ypa"],"off_ypa"))/2,
-               over=f"<b>Offenses:</b> both are efficient ({an} ~{ra['off_ypa']:.1f}, {hn} ~{rh['off_ypa']:.1f} yds/pass-att vs a ~{A('off_ypa'):.1f} average).",
-               under=f"<b>Offenses:</b> both project below average ({an} ~{ra['off_ypa']:.1f}, {hn} ~{rh['off_ypa']:.1f} yds/pass-att vs a ~{A('off_ypa'):.1f} average)."),
-          dict(z=(z(ra["fin_off"],"fin_off")+z(rh["fin_off"],"fin_off"))/2,
+          dict(z=z("def_ypa"),
+               over=f"<b>Pass defense:</b> both are exploitable ({an} ~{ra['def_ypa']:.1f}, {hn} ~{rh['def_ypa']:.1f} yds/att allowed vs a ~{A('def_ypa'):.1f} average).",
+               under=f"<b>Pass defense:</b> both are stingy ({an} ~{ra['def_ypa']:.1f}, {hn} ~{rh['def_ypa']:.1f} yds/att allowed vs a ~{A('def_ypa'):.1f} average) — tough sledding through the air."),
+          dict(z=z("def_ypc"),
+               over=f"<b>Run defense:</b> both give ground ({an} ~{ra['def_ypc']:.1f}, {hn} ~{rh['def_ypc']:.1f} yds/carry allowed vs a ~{A('def_ypc'):.1f} average).",
+               under=f"<b>Run defense:</b> both hold firm ({an} ~{ra['def_ypc']:.1f}, {hn} ~{rh['def_ypc']:.1f} yds/carry allowed vs a ~{A('def_ypc'):.1f} average)."),
+          dict(z=z("off_ypa"),
+               over=f"<b>Passing:</b> both attacks are efficient ({an} ~{ra['off_ypa']:.1f}, {hn} ~{rh['off_ypa']:.1f} yds/att vs a ~{A('off_ypa'):.1f} average).",
+               under=f"<b>Passing:</b> both attacks are below average ({an} ~{ra['off_ypa']:.1f}, {hn} ~{rh['off_ypa']:.1f} yds/att vs a ~{A('off_ypa'):.1f} average)."),
+          dict(z=z("off_ypc"),
+               over=f"<b>Rushing:</b> both ground games are productive ({an} ~{ra['off_ypc']:.1f}, {hn} ~{rh['off_ypc']:.1f} yds/carry vs a ~{A('off_ypc'):.1f} average).",
+               under=f"<b>Rushing:</b> both ground games are below average ({an} ~{ra['off_ypc']:.1f}, {hn} ~{rh['off_ypc']:.1f} yds/carry vs a ~{A('off_ypc'):.1f} average)."),
+          dict(z=z("fin_off"),
                over="<b>Finishing:</b> both turn yards into points at an above-average clip in the red zone.",
                under="<b>Finishing:</b> neither finishes drives efficiently (below-average points per 100 yards)."),
         ]
         txt=lambda f:f["over"] if f["z"]>0 else f["under"]
-        aligned=sorted([f for f in F if (f["z"]>0)==over and abs(f["z"])>=0.45], key=lambda f:-abs(f["z"]))
-        against=sorted([f for f in F if (f["z"]>0)!=over and abs(f["z"])>=0.8], key=lambda f:-abs(f["z"]))
+        aligned=sorted([f for f in F if (f["z"]>0)==over and abs(f["z"])>=0.4], key=lambda f:-abs(f["z"]))
+        against=sorted([f for f in F if (f["z"]>0)!=over and abs(f["z"])>=0.9], key=lambda f:-abs(f["z"]))
         bullets=[txt(f) for f in aligned[:2]]
         if against: bullets.append("<b>Cuts against it:</b> "+txt(against[0]).split("</b> ",1)[1])
-        if not bullets: bullets.append("<b>Even matchup:</b> the ratings net just off the market's number.")
+        if not bullets:   # combination edge — no single unit dominates
+            bullets.append(f"<b>Matchup-driven:</b> no single unit stands out, but the opponent-adjusted projection nets to the {'over' if over else 'under'} for this specific pairing.")
         opn=r.open_total if pd.notna(r.open_total) else r.mkt_total
         side="OVER" if over else "UNDER"; star=" ★" if abs(edge)>=5 else ""
         bullets.append(f"<b>Bottom line:</b> the model projects <b>{r.proj_total:.0f}</b> points ({an} {app_:.0f} – {hpp:.0f} {hn}); the line opened {opn:.1f} → a {abs(edge):.1f}-pt <b>{side}{star}</b> edge.")
@@ -474,7 +481,10 @@ def detail_html(r, season, week):
     rhp=hy*hfin/100; rap=ay*afin/100; sc=r.proj_total/max(rhp+rap,1e-6); hpp,app_=rhp*sc,rap*sc
     edge=r.edge if pd.notna(r.edge) else None
     ecls="g" if (edge or 0)>0 else "r"
-    narr = game_narrative(r,R,rh,ra,app_,hpp) if {r.home,r.away}=={"SMU","Florida State"} else ""  # preview: tonight's game only
+    cw=int(meta.get("current_week", r.week)) if meta else int(r.week)   # current week (+ next) only
+    show_narr = (edge is not None and abs(edge)>=3 and int(r.week) in (cw,cw+1)
+                 and pd.isna(getattr(r,"actual_total",np.nan)))          # Edge/Strong, remaining games, this week + next
+    narr = game_narrative(r,R,rh,ra,app_,hpp) if show_narr else ""
     return (f'''<div class="dpan">{narr}
       <div class="dsum">
         <div class="b"><div class="k">Market total</div><div class="v">{"—" if pd.isna(r.mkt_total) else r.mkt_total}</div></div>
