@@ -8,6 +8,19 @@ ODDS_KEY=open(f"{ROOT}/.odds_key").read().strip()
 CFBD_KEY=open(f"{ROOT}/.cfbd_key").read().strip()
 TEAMS=pd.read_csv(f"{DATA}/teams_fbs.csv")
 
+def _cache_get(name, max_age_hours=20):
+    """Return cached JSON payload if fresh (rankings/TV rarely change intra-day) else None."""
+    p=f"{OUT}/cache_{name}.json"
+    try:
+        d=json.load(open(p))
+        age=(dt.datetime.utcnow()-dt.datetime.fromisoformat(d["ts"])).total_seconds()
+        return d["data"] if age < max_age_hours*3600 else None
+    except Exception:
+        return None
+def _cache_put(name, data):
+    try: json.dump({"ts":dt.datetime.utcnow().isoformat(),"data":data}, open(f"{OUT}/cache_{name}.json","w"))
+    except Exception: pass
+
 def _norm(s):
     s=unicodedata.normalize("NFKD",str(s)).encode("ascii","ignore").decode()
     s=s.lower().replace("&","and"); s=re.sub(r"[^a-z0-9 ]","",s); return re.sub(r"\s+"," ",s).strip()
@@ -84,19 +97,25 @@ def log_snapshot(df):
         columns={"book_total_bovada":"open_bovada","book_total_consensus":"open_consensus"})
 
 def fetch_ap_top25(season):
-    """Latest AP Top 25 as {school: rank}. Auto-current: takes the most recent week's poll."""
+    """Latest AP Top 25 as {school: rank}. Cached ~daily (polls update weekly)."""
+    c=_cache_get(f"ap_{season}")
+    if c is not None: return c
     try:
         r=requests.get("https://api.collegefootballdata.com/rankings",params={"year":season},
             headers={"Authorization":f"Bearer {CFBD_KEY}"},timeout=30)
         d=r.json(); aps=[(x["week"],p) for x in d for p in x.get("polls",[]) if p.get("poll")=="AP Top 25"]
         if not aps: return {}
         lw=max(w for w,_ in aps); poll=next(p for w,p in aps if w==lw)
-        return {t["school"]:t["rank"] for t in poll.get("ranks",[])}
+        res={t["school"]:t["rank"] for t in poll.get("ranks",[])}
+        if res: _cache_put(f"ap_{season}", res)     # don't cache empties (e.g. a 429)
+        return res
     except Exception:
         return {}
 
 def fetch_media(season):
-    """{(home,away): tv_outlet} for the season (prefers TV over streaming)."""
+    """{(home,away): tv_outlet} for the season (prefers TV over streaming). Cached ~daily."""
+    c=_cache_get(f"media_{season}")
+    if c is not None: return {(h,a):o for h,a,o in c}
     try:
         r=requests.get("https://api.collegefootballdata.com/games/media",
             params={"year":season,"seasonType":"regular"},headers={"Authorization":f"Bearer {CFBD_KEY}"},timeout=60)
@@ -105,6 +124,7 @@ def fetch_media(season):
             k=(g.get("homeTeam"),g.get("awayTeam")); ou=g.get("outlet")
             if not ou: continue
             if k not in out or g.get("mediaType")=="tv": out[k]=ou
+        if out: _cache_put(f"media_{season}", [[h,a,o] for (h,a),o in out.items()])
         return out
     except Exception:
         return {}

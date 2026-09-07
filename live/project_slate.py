@@ -59,7 +59,7 @@ def build_slate(season=2026, fetch_live=True):
     # DURABLE openers + closes from CFBD (never live/in-game) — survives reboots, re-pulled every refresh
     OPEN={}; CLOSE={}
     if fetch_live:
-        for w in range(wk, wk+4):
+        for w in range(wk, wk+2):          # current + next week only (no far-ahead weeks)
             try:
                 for r in ODDS.fetch_cfbd_lines(season, w).itertuples():
                     ob=getattr(r,"open_bovada",None)
