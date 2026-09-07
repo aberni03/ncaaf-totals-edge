@@ -57,6 +57,9 @@ div[data-testid="stColumn"],div[data-testid="column"]{position:relative;}
 [class*="st-key-kpi_"] button{width:100%!important;height:100%!important;min-height:100%!important;opacity:0;cursor:pointer;padding:0!important;border:0!important;box-shadow:none!important;}
 div[data-testid="stColumn"]:has([class*="st-key-kpi_"]):hover .kpi,div[data-testid="column"]:has([class*="st-key-kpi_"]):hover .kpi{border-color:#3a5488;}
 .kpi{cursor:pointer;} .kpi.sel{border-color:#19e59b!important;box-shadow:0 0 0 1px rgba(25,229,155,.35) inset;}
+.why{background:linear-gradient(160deg,#10233f,#0b1526);border:1px solid #26406a;border-radius:12px;padding:12px 15px;margin:0 0 14px;}
+.why .whyh{font-weight:800;color:#eef3fc;font-size:13px;letter-spacing:.5px;margin-bottom:7px;text-transform:uppercase;}
+.why ul{margin:0;padding-left:17px;} .why li{color:#c7d2ea;font-size:12.5px;line-height:1.55;margin:4px 0;} .why li b{color:#eef3fc;font-weight:700;}
 .wkrec{border-radius:12px;padding:10px 16px;margin:2px 0 4px;font-size:14px;font-weight:700;text-align:center;}
 .wkrec.win{background:linear-gradient(90deg,rgba(25,229,155,.20),rgba(56,214,255,.08));border:1px solid #1f7a5a;color:#d6f7ec;}
 .wkrec.loss{background:rgba(255,77,115,.12);border:1px solid #5c2130;color:#f3c0cc;}
@@ -419,6 +422,45 @@ def ratings_for(season, week):
     import ratings_engine as RE
     R,lg=RE.compute_ratings(int(season), int(week)); return R,lg
 
+def game_narrative(r, R, rh, ra, app_, hpp):
+    """Plain-English 'why over/under', rule-based, from the model's opponent-adjusted ratings vs FBS average."""
+    try:
+        edge=float(r.edge)
+        if pd.isna(edge) or edge==0: return ""
+        over=edge>0; an,hn=r.away,r.home
+        T=list(R.values())
+        A=lambda k:float(np.mean([t[k] for t in T if t.get(k) is not None]))
+        S=lambda k:(lambda sd:sd if sd>1e-6 else 1.0)(float(np.std([t[k] for t in T if t.get(k) is not None])))
+        z=lambda v,k:(v-A(k))/S(k)
+        pace=(rh["tempo"]+ra["tempo"])/2
+        F=[
+          dict(z=(z(rh["tempo"],"tempo")+z(ra["tempo"],"tempo"))/2,
+               over=f"<b>Tempo:</b> both play fast (~{pace:.0f} plays/game vs a ~{A('tempo'):.0f} FBS average) — more possessions and scoring chances.",
+               under=f"<b>Tempo:</b> both play deliberately (~{pace:.0f} plays/game vs a ~{A('tempo'):.0f} FBS average) — fewer possessions to score."),
+          dict(z=(z(ra["def_ypa"],"def_ypa")+z(rh["def_ypa"],"def_ypa"))/2,
+               over=f"<b>Defenses:</b> both are leaky ({an} ~{ra['def_ypa']:.1f}, {hn} ~{rh['def_ypa']:.1f} yds/pass-att allowed vs a ~{A('def_ypa'):.1f} average) — chunk plays available.",
+               under=f"<b>Defenses:</b> both project well above average ({an} ~{ra['def_ypa']:.1f}, {hn} ~{rh['def_ypa']:.1f} yds/pass-att allowed vs a ~{A('def_ypa'):.1f} average) — offenses get held below their norm."),
+          dict(z=(z(ra["off_ypa"],"off_ypa")+z(rh["off_ypa"],"off_ypa"))/2,
+               over=f"<b>Offenses:</b> both are efficient ({an} ~{ra['off_ypa']:.1f}, {hn} ~{rh['off_ypa']:.1f} yds/pass-att vs a ~{A('off_ypa'):.1f} average).",
+               under=f"<b>Offenses:</b> both project below average ({an} ~{ra['off_ypa']:.1f}, {hn} ~{rh['off_ypa']:.1f} yds/pass-att vs a ~{A('off_ypa'):.1f} average)."),
+          dict(z=(z(ra["fin_off"],"fin_off")+z(rh["fin_off"],"fin_off"))/2,
+               over="<b>Finishing:</b> both turn yards into points at an above-average clip in the red zone.",
+               under="<b>Finishing:</b> neither finishes drives efficiently (below-average points per 100 yards)."),
+        ]
+        txt=lambda f:f["over"] if f["z"]>0 else f["under"]
+        aligned=sorted([f for f in F if (f["z"]>0)==over and abs(f["z"])>=0.45], key=lambda f:-abs(f["z"]))
+        against=sorted([f for f in F if (f["z"]>0)!=over and abs(f["z"])>=0.8], key=lambda f:-abs(f["z"]))
+        bullets=[txt(f) for f in aligned[:2]]
+        if against: bullets.append("<b>Cuts against it:</b> "+txt(against[0]).split("</b> ",1)[1])
+        if not bullets: bullets.append("<b>Even matchup:</b> the ratings net just off the market's number.")
+        opn=r.open_total if pd.notna(r.open_total) else r.mkt_total
+        side="OVER" if over else "UNDER"; star=" ★" if abs(edge)>=5 else ""
+        bullets.append(f"<b>Bottom line:</b> the model projects <b>{r.proj_total:.0f}</b> points ({an} {app_:.0f} – {hpp:.0f} {hn}); the line opened {opn:.1f} → a {abs(edge):.1f}-pt <b>{side}{star}</b> edge.")
+        lis="".join(f"<li>{b}</li>" for b in bullets)
+        return f'<div class="why"><div class="whyh">Why {side}{star}</div><ul>{lis}</ul></div>'
+    except Exception:
+        return ""
+
 def detail_html(r, season, week):
     import ratings_engine as RE
     R,lg=ratings_for(season, week)
@@ -432,7 +474,8 @@ def detail_html(r, season, week):
     rhp=hy*hfin/100; rap=ay*afin/100; sc=r.proj_total/max(rhp+rap,1e-6); hpp,app_=rhp*sc,rap*sc
     edge=r.edge if pd.notna(r.edge) else None
     ecls="g" if (edge or 0)>0 else "r"
-    return (f'''<div class="dpan">
+    narr = game_narrative(r,R,rh,ra,app_,hpp) if {r.home,r.away}=={"SMU","Florida State"} else ""  # preview: tonight's game only
+    return (f'''<div class="dpan">{narr}
       <div class="dsum">
         <div class="b"><div class="k">Market total</div><div class="v">{"—" if pd.isna(r.mkt_total) else r.mkt_total}</div></div>
         <div class="b"><div class="k">Opener</div><div class="v">{"—" if pd.isna(r.open_total) else r.open_total}</div></div>
