@@ -204,8 +204,12 @@ with c1:
       '<div class="sub">Model-powered over/under picks for college football — catch soft opening lines before they move.</div></div>',
       unsafe_allow_html=True)
 def run_job(script, label, args=None):
-    with st.spinner(f"{label}…"):
-        r=subprocess.run([sys.executable, f"{HERE}/{script}"]+(args or []), cwd=ROOT, capture_output=True, text=True)
+    try:
+        with st.spinner(f"{label}… (usually ~15–40s)"):
+            r=subprocess.run([sys.executable, f"{HERE}/{script}"]+(args or []), cwd=ROOT, capture_output=True, text=True, timeout=150)
+    except subprocess.TimeoutExpired:
+        st.session_state["_msg"]=("err","⚠️ Timed out — a data provider is slow or rate-limited. Try again in a minute.")
+        st.rerun(); return
     if r.returncode==0:
         st.cache_data.clear(); st.session_state["_msg"]=("ok",f"✅ {label} complete."); st.rerun()
     else:
@@ -213,6 +217,8 @@ def run_job(script, label, args=None):
 
 with c2:
     st.markdown(f'<div class="stamp">⟳ updated {_tstamp} · <b>{meta.get("requests_remaining","—") if meta else "—"}</b> credits</div>',unsafe_allow_html=True)
+    if meta and meta.get("cfbd_ok") is False:
+        st.markdown('<div class="stamp" style="color:#ffb454">⚠ CFBD monthly quota hit — openers/AP/TV paused; live totals still update</div>',unsafe_allow_html=True)
     if st.button("🔄  Refresh odds", use_container_width=True,
                  help="Re-pull live lines & re-project with current ratings (1 odds credit). Use Sun–Tue as openers post."):
         run_job("project_slate.py","Refreshing live odds")

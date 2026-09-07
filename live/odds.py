@@ -113,9 +113,12 @@ def fetch_cfbd_lines(season, week):
     """Fallback / historical: CFBD lines incl. Bovada open."""
     r=requests.get("https://api.collegefootballdata.com/lines",
         params={"year":season,"week":week,"seasonType":"regular"},
-        headers={"Authorization":f"Bearer {CFBD_KEY}"},timeout=60)
+        headers={"Authorization":f"Bearer {CFBD_KEY}"},timeout=30)
+    data=r.json() if r.ok else None
+    if not isinstance(data,list):          # 429 quota / error body -> empty, never crash the refresh
+        raise RuntimeError(f"CFBD {r.status_code}: {str(data)[:80]}")
     rows=[]
-    for g in r.json():
+    for g in data:
         bov=next((l for l in g.get("lines",[]) if l["provider"]=="Bovada"),None)
         cons=next((l for l in g.get("lines",[]) if l["provider"]=="consensus"),None)
         ou=[l.get("overUnder") for l in g.get("lines",[]) if l.get("overUnder")]

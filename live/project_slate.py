@@ -102,7 +102,8 @@ def build_slate(season=2026, fetch_live=True):
         slate.loc[slate.edge.isna(),"signal"]="-"
         slate=slate.sort_values(["week","kick","abs_edge"],ascending=[True,True,False])
     slate.to_csv(f"{OUT}/slate.csv",index=False)
-    json.dump(dict(season=season,current_week=wk,ratings_week=rwk,requests_remaining=str(rem),
+    cfbd_ok=bool(RANKS or MEDIA or OPEN or CLOSE)   # all empty => CFBD quota/auth problem
+    json.dump(dict(season=season,current_week=wk,ratings_week=rwk,requests_remaining=str(rem),cfbd_ok=cfbd_ok,
         generated=datetime.now(ET).strftime("%Y-%m-%d %-I:%M %p ET"),n=len(slate)),open(f"{OUT}/slate_meta.json","w"))
     return slate
 
