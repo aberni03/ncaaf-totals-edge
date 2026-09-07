@@ -91,10 +91,10 @@ button[data-baseweb="tab"][aria-selected="true"]{color:#eef3fc!important;}
 div[data-baseweb="tab-list"]{gap:30px!important;border-bottom:1px solid #17233b;margin-bottom:12px;}
 div[data-baseweb="tab-highlight"]{background:#19e59b!important;height:2.5px!important;}
 div[data-baseweb="tab-border"]{display:none!important;}
-.wkrec{border-radius:12px;padding:10px 16px;margin:2px 0 4px;font-size:14px;font-weight:700;text-align:center;}
-.wkrec.win{background:linear-gradient(90deg,rgba(25,229,155,.20),rgba(56,214,255,.08));border:1px solid #1f7a5a;color:#d6f7ec;}
-.wkrec.loss{background:rgba(255,180,84,.10);border:1px solid #5c4a21;color:#f3e6cf;}
-.wkrec.even{background:#141d33;border:1px solid var(--line);color:#c7d2ea;}
+.wkrec{border:0;border-left:3px solid #2a3a5c;border-radius:0;background:transparent;padding:9px 0 9px 14px;margin:6px 0 10px;font-size:14px;font-weight:700;text-align:left;}
+.wkrec.win{border-left-color:#19e59b;background:linear-gradient(90deg,rgba(25,229,155,.07),transparent 55%);color:#d6f7ec;}
+.wkrec.loss{border-left-color:#ffb454;background:linear-gradient(90deg,rgba(255,180,84,.07),transparent 55%);color:#f3e6cf;}
+.wkrec.even{border-left-color:#3a4a6a;background:transparent;color:#c7d2ea;}
 .wkrec b{color:#fff;} .wkrec .wkn{color:var(--mut);font-weight:600;font-size:12px;} .wkrec .wkbest{color:var(--grn);font-weight:800;}
 .kpi{background:linear-gradient(160deg,var(--card),var(--card2));border:1px solid var(--line);border-radius:16px;padding:15px 18px;}
 .kpi .n{font-size:26px;font-weight:900;color:var(--txt);line-height:1;} .kpi .n.g{color:var(--grn);} .kpi .n.r{color:var(--red);}
@@ -385,7 +385,7 @@ def bankroll_settings():
         with cF: st.selectbox("Week / phase",wkopts,key="bk_week")
         cC,cD=st.columns(2)
         with cC: st.selectbox("Side",["Both","Overs only","Unders only"],key="bk_side")
-        with cD: st.selectbox("CLV",["All CLV","CLV+ (market agreed)","CLV− (market faded)"],key="bk_clv")
+        with cD: st.selectbox("CLV",["All CLV","CLV+ (market agreed)","CLV neutral (no move)","CLV− (market faded)"],key="bk_clv")
         st.button("↺  Reset to defaults", use_container_width=True, on_click=_reset_bk, key="bk_reset")
 
 def _bk_compute(track):
@@ -406,6 +406,7 @@ def _bk_compute(track):
     if side=="Overs only": b=b[b.rec=="OVER"]
     elif side=="Unders only": b=b[b.rec=="UNDER"]
     if "agreed" in clv: b=b[b.clv_pts>0]          # positive CLV = close moved toward the model
+    elif "neutral" in clv: b=b[b.clv_pts==0]      # line never moved off the opener
     elif "faded" in clv: b=b[b.clv_pts<0]
     b["_dt"]=pd.to_datetime(b.date,format="%m/%d/%y",errors="coerce")
     b=b.sort_values(["season","_dt","week"])
@@ -772,6 +773,7 @@ def render_track():
     if side_f=="Overs only": bets=bets[bets.rec=="OVER"]
     elif side_f=="Unders only": bets=bets[bets.rec=="UNDER"]
     if "agreed" in clv_f: bets=bets[bets.clv_pts>0]
+    elif "neutral" in clv_f: bets=bets[bets.clv_pts==0]
     elif "faded" in clv_f: bets=bets[bets.clv_pts<0]
     if week_f!="All weeks":
         try: bets=bets[bets.week==int(week_f)]
@@ -799,7 +801,7 @@ def render_track():
             st.selectbox("Bets",["All bets (≥3)","Strong Edge only (≥5)","Edge only (3–5)"],key="tr_tier")
             st.selectbox("Result",["All","Wins","Losses"],key="tr_result")
             st.selectbox("Side",["Both","Overs only","Unders only"],key="tr_side")
-            st.selectbox("CLV",["All CLV","CLV+ (market agreed)","CLV− (market faded)"],key="tr_clv")
+            st.selectbox("CLV",["All CLV","CLV+ (market agreed)","CLV neutral (no move)","CLV− (market faded)"],key="tr_clv")
             st.button("↺  Reset to defaults", use_container_width=True, on_click=_reset_tr, key="tr_reset")
     if res=="Wins": bets=bets[bets.result=="WIN"]
     elif res=="Losses": bets=bets[bets.result=="LOSS"]
