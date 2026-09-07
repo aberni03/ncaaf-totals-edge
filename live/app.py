@@ -189,8 +189,11 @@ div[role="radiogroup"]{gap:6px;} div[role="radiogroup"] label{background:var(--c
   .dateline{font-size:9.5px;letter-spacing:.5px;padding:8px 2px 4px;}
   button[data-baseweb="tab"]{font-size:13px!important;letter-spacing:.3px;padding:6px 2px!important;}
   div[data-baseweb="tab-list"]{gap:16px!important;}
-  .st-key-refresh_btn button{font-size:11px!important;padding:5px 10px!important;}
-  .st-key-daterow div[data-testid="stColumn"]{flex:1 1 100%!important;max-width:100%!important;min-width:100%!important;}  /* stack date over refresh (no overlap) */
+  .st-key-refresh_btn button{font-size:11px!important;padding:4px 12px!important;width:auto!important;}
+  /* stack date over refresh on mobile (flip the row to a column) + shrink the button so it isn't prominent */
+  .st-key-daterow [data-testid="stHorizontalBlock"]{flex-direction:column!important;align-items:flex-start!important;gap:6px!important;}
+  .st-key-daterow [data-testid="stColumn"],.st-key-daterow [data-testid="column"]{width:100%!important;flex:1 1 100%!important;max-width:100%!important;min-width:100%!important;}
+  .st-key-daterow .stButton button{width:auto!important;}
   .bkrow .bkcell{flex:1 1 30%!important;border-right:0!important;padding:4px 4px!important;}
   .bkrow .bkcell:first-child{flex:1 1 100%!important;}
   .bkrow .bv{font-size:16px;} .bkrow .bv.big{font-size:26px;} .bkrow .bl{font-size:9.5px;}
