@@ -471,10 +471,10 @@ def bankroll_card(track, compact=False):
 
 def bankroll_block(compact=False):
     if track is None or len(track)==0: return
-    d=_bk_compute(track)
     with st.container(border=True):                # the widget box — label + ⚙️ live INSIDE it
         hl,hr=st.columns([6,1])
-        with hr: bankroll_settings()               # ⚙️ settings inside the widget, top-right
+        with hr: bankroll_settings()               # instantiate the settings widgets FIRST…
+        d=_bk_compute(track)                        # …then read them, so the chart updates on the first change (no double-click)
         if d is None:
             with hl: st.markdown('<div class="bank-hdr">MODEL BANKROLL — no bets match these settings</div>',unsafe_allow_html=True)
             return
