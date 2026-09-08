@@ -66,21 +66,33 @@ def agg(gid):
     sp=med("spread","consensus")
     if np.isnan(sp): sp=med("spread")
     return opener,close,sp
+PP=f"{OUT}/picks_log.csv"; PICKS=pd.read_csv(PP) if os.path.exists(PP) else pd.DataFrame()
+def posted(wk,home,away):   # the pick as it was shown on the board (frozen at kickoff) — grade THIS, not a re-projection
+    if not len(PICKS): return None
+    m=PICKS[(PICKS.season==2026)&(PICKS.week==wk)&(PICKS.home==home)&(PICKS.away==away)]
+    return m.iloc[0] if len(m) else None
 rows=[]
 for wk in sorted(g.week.unique()):
     R,lg=RE.compute_ratings(2026, upto_week=int(wk))
     for r in g[g.week==wk].itertuples():
-        feat=RE.project_matchup(r.home,r.away,R,lg,week=int(wk),
-            neutral=int(bool(r.neutral)) if not pd.isna(r.neutral) else 0, mkt_spread=0.0)
-        if feat is None or pd.isna(r.actual): continue
+        if pd.isna(r.actual): continue
         opener,close,sp=agg(r.game_id)
-        if pd.notna(sp): feat["mkt_spread"]=sp
-        proj=round(float(model.predict(np.array([[feat[c] for c in FEATS]]))[0])+CALIB,1)
-        if pd.isna(opener) and pd.isna(close): continue
-        op = opener if pd.notna(opener) else close
+        snap=posted(int(wk),r.home,r.away)
+        if snap is not None and pd.notna(snap.get("proj")) and pd.notna(snap.get("opener")):
+            op=float(snap["opener"]); proj=round(float(snap["proj"]),1); edge=round(float(snap["edge"]),1)   # posted pick
+        else:                                                                                                # fallback: leak-free re-projection
+            feat=RE.project_matchup(r.home,r.away,R,lg,week=int(wk),
+                neutral=int(bool(r.neutral)) if not pd.isna(r.neutral) else 0, mkt_spread=0.0)
+            if feat is None: continue
+            if pd.notna(sp): feat["mkt_spread"]=sp
+            proj=round(float(model.predict(np.array([[feat[c] for c in FEATS]]))[0])+CALIB,1)
+            if pd.isna(opener) and pd.isna(close): continue
+            op = opener if pd.notna(opener) else close
+            edge=round(proj-op,1)
+        if pd.isna(op): continue
         rows.append(dict(season=2026,week=int(wk),date=kick(r.start_date),away=r.away,home=r.home,
             opener=round(op,1), close=round(close,1) if pd.notna(close) else round(op,1),
-            proj=proj, edge=round(proj-op,1), actual=int(r.actual)))
+            proj=proj, edge=edge, actual=int(r.actual)))
 ytd=grade(pd.DataFrame(rows))[COLS] if rows else pd.DataFrame(columns=COLS)
 
 out=pd.concat([hist,ytd],ignore_index=True).sort_values(["season","week"])
