@@ -97,24 +97,38 @@ def build_slate(season=2026, fetch_live=True):
     slate=pd.DataFrame(rows)
     if len(slate):
         slate["edge"]=pd.to_numeric(slate.edge,errors="coerce")
+        # ---- freeze at kickoff: snapshot pre-kickoff picks; show frozen values for in-progress games ----
+        try:
+            now_et=datetime.now(ET)
+            def _pre(iso):                                   # True = game has NOT kicked off yet
+                try: return datetime.fromisoformat(str(iso))>now_et
+                except: return True
+            pre=slate.kick.map(_pre)
+            snap=slate[pre & slate.open_total.notna() & slate.proj_total.notna()][
+                ["week","home","away","open_total","close_total","proj_total","edge","side"]].rename(
+                columns={"open_total":"opener","close_total":"close","proj_total":"proj"})
+            snap.insert(0,"season",season)
+            pp=f"{OUT}/picks_log.csv"; key=["season","week","home","away"]
+            if os.path.exists(pp):
+                old=pd.read_csv(pp); ok=old[key].astype(str).agg("|".join,axis=1); nk=snap[key].astype(str).agg("|".join,axis=1)
+                snap=pd.concat([old[~ok.isin(set(nk))],snap],ignore_index=True)   # keep frozen rows; only refresh pre-kickoff games
+            snap.to_csv(pp,index=False)
+            # in-progress games (kicked, not final): display the FROZEN pre-kickoff pick + close, not a live re-projection
+            fz=snap.set_index(key)
+            for i in slate.index[(~pre) & slate.actual_total.isna()]:
+                k=(season,int(slate.at[i,"week"]),slate.at[i,"home"],slate.at[i,"away"])
+                if k in fz.index:
+                    fr=fz.loc[k]; fr=fr.iloc[0] if getattr(fr,"ndim",1)>1 else fr
+                    for col,src in [("proj_total","proj"),("edge","edge"),("side","side"),("close_total","close"),("open_total","opener")]:
+                        if pd.notna(fr.get(src)): slate.at[i,col]=fr[src]
+        except Exception as e:
+            print("picks freeze failed:",e)
+        slate["edge"]=pd.to_numeric(slate.edge,errors="coerce")
         slate["abs_edge"]=slate.edge.abs()
         slate["signal"]=np.where(slate.abs_edge>=5,"STRONG",np.where(slate.abs_edge>=3,"LEAN","-"))
         slate.loc[slate.edge.isna(),"signal"]="-"
         slate=slate.sort_values(["week","kick","abs_edge"],ascending=[True,True,False])
     slate.to_csv(f"{OUT}/slate.csv",index=False)
-    # ---- freeze the posted pick: snapshot UPCOMING games so the record grades exactly what the board showed ----
-    try:
-        if len(slate):
-            up=slate[slate.actual_total.isna() & slate.open_total.notna() & slate.proj_total.notna()].copy()
-            snap=up[["week","home","away","open_total","proj_total","edge","side"]].rename(
-                columns={"open_total":"opener","proj_total":"proj"}); snap.insert(0,"season",season)
-            pp=f"{OUT}/picks_log.csv"; key=["season","week","home","away"]
-            if os.path.exists(pp):
-                old=pd.read_csv(pp); ok=old[key].astype(str).agg("|".join,axis=1); nk=snap[key].astype(str).agg("|".join,axis=1)
-                snap=pd.concat([old[~ok.isin(set(nk))],snap],ignore_index=True)   # keep frozen (completed) rows, refresh upcoming
-            snap.to_csv(pp,index=False)
-    except Exception as e:
-        print("picks_log snapshot failed:",e)
     cfbd_ok=bool(RANKS or MEDIA or OPEN or CLOSE)   # all empty => CFBD quota/auth problem
     json.dump(dict(season=season,current_week=wk,ratings_week=rwk,requests_remaining=str(rem),cfbd_ok=cfbd_ok,
         generated=datetime.now(ET).strftime("%Y-%m-%d %-I:%M %p ET"),n=len(slate)),open(f"{OUT}/slate_meta.json","w"))
