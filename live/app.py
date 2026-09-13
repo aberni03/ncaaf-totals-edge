@@ -744,7 +744,9 @@ def render_board():
           f'{mv}<div class="sp"><div class="k">Spread</div><div class="v mono">{sp(r.mkt_spread)}</div></div><div class="sig">{badge}{mvchip}</div></div>')
     if len(view)==0: st.info("No games match these filters.")
     else:
-        rwk=meta.get("ratings_week", wk)
+        # ratings as-of the latest COMPLETED week (+1), derived live from the slate so it can't read stale from meta
+        _dc=slate[slate.actual_total.notna()] if (slate is not None and "actual_total" in slate.columns) else None
+        rwk=int(_dc.week.max())+1 if (_dc is not None and len(_dc)) else int(meta.get("ratings_week", wk))
         for day in view.day.dropna().unique():
             st.markdown(f'<div class="daybar"><span>{day}</span><div class="ln"></div></div>',unsafe_allow_html=True)
             for r in view[view.day==day].itertuples():
