@@ -12,15 +12,22 @@ DATA=ROOT+"/data"; OUT=ROOT+"/out"; MODELS=ROOT+"/models"
 ET=ZoneInfo("America/New_York")
 
 def current_week(season):
-    # current bettable week = earliest week that still has UPCOMING (unplayed) games
-    g=pd.read_csv(f"{DATA}/games.csv"); g=g[(g.season==season)&(g.season_type=="regular")]
-    up=g[g.completed!=True]
+    # current bettable week = earliest week with an FBS-vs-FBS game not yet kicked off.
+    # FBS filter drops small-school stragglers CFBD never marks final; the kickoff check also
+    # guards against a cancelled/never-final FBS game stranding the board on a past week.
+    g=pd.read_csv(f"{DATA}/games.csv")
+    g=g[(g.season==season)&(g.season_type=="regular")&(g.home_div=="fbs")&(g.away_div=="fbs")].copy()
+    if not len(g): return 1
+    ko=pd.to_datetime(g.start_date,errors="coerce",utc=True); now=pd.Timestamp.now(tz="UTC")
+    up=g[(g.completed!=True)&(ko>now)]                        # not final AND not yet kicked off
     if len(up): return int(up.week.min())
-    return int(g.week.max()) if len(g) else 1
+    frac=g.groupby("week").completed.apply(lambda s:(s==True).mean())   # else: earliest week not ~complete
+    below=frac[frac<0.9]
+    return int(below.index.min()) if len(below) else int(g.week.max())
 
 def ratings_week(season):
-    # as-of week for RATINGS = include ALL games completed to date (so last night's results count).
-    g=pd.read_csv(f"{DATA}/games.csv"); done=g[(g.season==season)&(g.completed==True)]
+    # as-of week for RATINGS = include ALL FBS games completed to date (so last night's results count).
+    g=pd.read_csv(f"{DATA}/games.csv"); done=g[(g.season==season)&(g.completed==True)&(g.home_div=="fbs")&(g.away_div=="fbs")]
     return int(done.week.max())+1 if len(done) else 1
 
 def _fmt_kick(iso):
