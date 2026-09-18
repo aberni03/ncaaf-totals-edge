@@ -1,6 +1,8 @@
 """CFB Totals Edge — dashboard.  Run:  streamlit run live/app.py"""
 import os, sys, json, subprocess
 from datetime import datetime, timezone
+from zoneinfo import ZoneInfo
+ET=ZoneInfo("America/New_York")   # every displayed date/time is Eastern (site is ET-keyed)
 import pandas as pd, numpy as np
 import streamlit as st
 import altair as alt
@@ -310,7 +312,7 @@ with st.container(key="daterow"):
     with _dl:
         _cr=f' &nbsp;·&nbsp; <b>{meta.get("requests_remaining","—")}</b> credits' if meta else ""
         _warn=' &nbsp;·&nbsp; <span style="color:#ffb454">⚠ CFBD quota hit</span>' if (meta and meta.get("cfbd_ok") is False) else ""
-        st.markdown(f'<div class="dateline">{datetime.now().strftime("%A, %B %-d, %Y").upper()} &nbsp;·&nbsp; updated <b>{_tstamp}</b>{_cr}{_warn}</div>',unsafe_allow_html=True)
+        st.markdown(f'<div class="dateline">{datetime.now(ET).strftime("%A, %B %-d, %Y").upper()} &nbsp;·&nbsp; updated <b>{_tstamp}</b>{_cr}{_warn}</div>',unsafe_allow_html=True)
     with _db:
         if st.button("↻ Refresh", key="refresh_btn", use_container_width=True,
                      help="Live lines (this week + next) + box scores for completed games, then re-grade & re-project. ~1 odds credit."):
