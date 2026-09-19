@@ -250,10 +250,10 @@ _gen=meta.get("generated","—") if meta else "—"
 _tstamp=_gen.split(" ",1)[1] if (isinstance(_gen,str) and " " in _gen) else _gen
 def run_job(script, label, args=None):
     try:
-        with st.spinner(f"{label}… (usually ~15–40s)"):
-            r=subprocess.run([sys.executable, f"{HERE}/{script}"]+(args or []), cwd=ROOT, capture_output=True, text=True, timeout=150)
+        with st.spinner(f"{label}… (pulling results, re-grading & re-projecting — up to ~2 min)"):
+            r=subprocess.run([sys.executable, f"{HERE}/{script}"]+(args or []), cwd=ROOT, capture_output=True, text=True, timeout=300)
     except subprocess.TimeoutExpired:
-        st.session_state["_msg"]=("err","⚠️ Timed out — a data provider is slow or rate-limited. Try again in a minute.")
+        st.session_state["_msg"]=("err","⚠️ The update didn't finish in time. Your data is unchanged — please try again in a minute.")
         st.rerun(); return
     if r.returncode==0:
         st.cache_data.clear(); st.session_state["_msg"]=("ok",f"✅ {label} complete."); st.rerun()

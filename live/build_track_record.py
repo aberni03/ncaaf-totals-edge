@@ -73,7 +73,7 @@ def posted(wk,home,away):   # the pick as it was shown on the board (frozen at k
     return m.iloc[0] if len(m) else None
 rows=[]
 for wk in sorted(g.week.unique()):
-    R,lg=RE.compute_ratings(2026, upto_week=int(wk))
+    R=lg=None                                       # lazy: only compute ratings if a game needs the fallback
     for r in g[g.week==wk].itertuples():
         if pd.isna(r.actual): continue
         opener,close,sp=agg(r.game_id)
@@ -81,6 +81,7 @@ for wk in sorted(g.week.unique()):
         if snap is not None and pd.notna(snap.get("proj")) and pd.notna(snap.get("opener")):
             op=float(snap["opener"]); proj=round(float(snap["proj"]),1); edge=round(float(snap["edge"]),1)   # posted pick
         else:                                                                                                # fallback: leak-free re-projection
+            if R is None: R,lg=RE.compute_ratings(2026, upto_week=int(wk))
             feat=RE.project_matchup(r.home,r.away,R,lg,week=int(wk),
                 neutral=int(bool(r.neutral)) if not pd.isna(r.neutral) else 0, mkt_spread=0.0)
             if feat is None: continue
