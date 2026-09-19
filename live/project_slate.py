@@ -76,6 +76,10 @@ def build_slate(season=2026, fetch_live=True):
                     if cv is not None and pd.notna(cv): CLOSE[(r.home,r.away)]=float(cv)
             except Exception: pass
 
+    # ---- frozen opener store: lock in CFBD's Bovada open the first time it's authoritative; never let it drift ----
+    OPPATH=f"{OUT}/openers.csv"
+    _op=pd.read_csv(OPPATH) if os.path.exists(OPPATH) else pd.DataFrame(columns=["season","week","home","away","opener","source"])
+    OPN={(r.home,r.away):(float(r.opener),str(r.source),int(r.week)) for r in _op.itertuples() if int(r.season)==season}
     rows=[]
     for g in sched.itertuples():
         feat=RE.project_matchup(g.home,g.away,ratings,lg,week=int(g.week),
@@ -84,9 +88,17 @@ def build_slate(season=2026, fetch_live=True):
         if feat is None: continue
         X=np.array([[feat[c] for c in FEATS]]); model_total=float(model.predict(X)[0])+CALIB
         od=OD.get((g.home,g.away),{})
-        cfbd_open=OPEN.get((g.home,g.away))
+        _key=(g.home,g.away); _wk=int(g.week); cfbd_open=OPEN.get(_key); prev=OPN.get(_key)
+        if cfbd_open is not None and pd.notna(cfbd_open):
+            if prev is None or prev[1]=="odds": OPN[_key]=(float(cfbd_open),"cfbd",_wk)   # freeze/upgrade to the authoritative Bovada open
+            mopen=OPN[_key][0]
+        elif prev is not None:
+            mopen=prev[0]                                                                  # keep the frozen opener (never moves)
+        else:
+            _oo=od.get("open_total")
+            if _oo is not None and pd.notna(_oo): OPN[_key]=(float(_oo),"odds",_wk); mopen=float(_oo)  # tentative until CFBD posts the real open
+            else: mopen=None
         mtot=od.get("cur_total")
-        mopen=cfbd_open if (cfbd_open is not None and pd.notna(cfbd_open)) else od.get("open_total")  # durable CFBD opener first
         mspread=od.get("cur_spread")
         ref = mopen if (mopen is not None and pd.notna(mopen)) else mtot
         edge = round(model_total-ref,1) if (ref is not None and pd.notna(ref)) else None
@@ -101,6 +113,8 @@ def build_slate(season=2026, fetch_live=True):
             actual_total=actual, close_total=CLOSE.get((g.home,g.away)),
             home_rank=RANKS.get(g.home), away_rank=RANKS.get(g.away), tv=MEDIA.get((g.home,g.away)),
             n_books=od.get("n_books"), w_current=round(np.mean([ratings.get(g.home,{}).get("w",0),ratings.get(g.away,{}).get("w",0)]),2)))
+    if OPN:   # persist the frozen openers
+        pd.DataFrame([dict(season=season,week=w,home=h,away=a,opener=o,source=s) for (h,a),(o,s,w) in OPN.items()]).to_csv(OPPATH,index=False)
     slate=pd.DataFrame(rows)
     if len(slate):
         slate["edge"]=pd.to_numeric(slate.edge,errors="coerce")
