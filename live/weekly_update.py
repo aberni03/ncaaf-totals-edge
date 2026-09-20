@@ -9,10 +9,17 @@ features update as games come in. Retrain (live/train.py) only in the OFFSEASON 
 completed year to the training set.
 
 TIME BUDGET (why this file is structured in steps): the dashboard runs this as a subprocess
-and kills it at 300s. Every network pull is therefore bounded (2 attempts x 25s, never past
-PULL_BUDGET seconds total) and every step is independent — a slow or failing provider skips
-that step and leaves its data untouched instead of stranding the whole refresh. The board
-rebuild ALWAYS runs last, so the visible board matches whatever data actually landed.
+and kills it at 240s. Every network pull is bounded (2 attempts x 25s, never past PULL_BUDGET
+seconds total) and every step is independent — a slow or failing provider skips that step and
+leaves its data untouched instead of stranding the whole refresh.
+
+ORDER MATTERS: pulls -> BOARD -> regrade. The board is what the page shows and is the lighter
+job (~142MB vs ~271MB peak); the regrade only feeds the Track Record tab. Running the board
+first means a slow, skipped or OOM-killed regrade can never cost you a fresh board.
+
+The heavy path really belongs off this container: .github/workflows/refresh.yml runs the same
+update on a GitHub runner (7GB, full CPU) and COMMITS the result, which also survives the
+container restarts that otherwise reset its ephemeral disk back to the repo.
 """
 import os, sys, time, json, subprocess, datetime as dt, requests, pandas as pd
 ROOT=os.path.dirname(os.path.dirname(os.path.abspath(__file__))); DATA=ROOT+"/data"; OUT=ROOT+"/out"; HERE=os.path.dirname(os.path.abspath(__file__))
@@ -172,17 +179,31 @@ def run_stage(n, label, script, budget):
 
 def _remaining(): return TOTAL_BUDGET-(time.time()-T0)
 
-# ---- skip the regrade when nothing new has finished ------------------------------------------
-# The Track Record only changes when a game goes final (or its lines/snapshot change). Repeat
-# clicks were paying for a full regrade every time; fingerprint the inputs and skip if identical.
+# Release the parent's pandas objects before spawning children — on a ~1GB container the
+# parent + child are alive at the same time, and that concurrent peak is what gets us killed.
+import gc
+for _v in [v for v in list(globals()) if v.startswith(("gr","lrows","new","ts","L","gg"))]:
+    globals().pop(_v,None)
+gc.collect()
+
+# ---- BOARD FIRST -----------------------------------------------------------------------------
+# The board is what the page shows; the regrade only feeds the Track Record tab. Rebuilding the
+# board first means a slow or killed regrade can no longer cost you a fresh board. project_slate
+# is also the lighter of the two (~142MB vs ~271MB peak).
+r_board=run_stage(4,"re-projecting board","project_slate.py",min(140,_remaining()-40))
+
+# ---- REGRADE LAST, and only when something new has actually finished --------------------------
+# Grading only reads COMPLETED games, and snapshots for completed games are frozen at kickoff and
+# never change — so if the finals and their lines are unchanged, a regrade is guaranteed to
+# reproduce the same file. Fingerprint those inputs and skip when identical (repeat clicks were
+# each paying for a full 4,581-row regrade).
 def _fingerprint():
     try:
-        g=pd.read_csv(f"{DATA}/games.csv"); d=g[(g.season==YR)&(g.completed==True)&(g.home_div=="fbs")&(g.away_div=="fbs")]
-        L=pd.read_csv(f"{DATA}/lines.csv")
-        pk=f"{OUT}/picks_log.csv"
+        g=pd.read_csv(f"{DATA}/games.csv",usecols=["season","week","completed","home_div","away_div"])
+        d=g[(g.season==YR)&(g.completed==True)&(g.home_div=="fbs")&(g.away_div=="fbs")]
+        L=pd.read_csv(f"{DATA}/lines.csv",usecols=["season"])
         return dict(done=int(len(d)), maxwk=int(d.week.max()) if len(d) else 0,
-                    lines=int((L.season==YR).sum()),
-                    picks=int(len(pd.read_csv(pk))) if os.path.exists(pk) else 0)
+                    lines=int((L.season==YR).sum()))
     except Exception:
         return None
 
@@ -192,22 +213,20 @@ try: prev=json.load(open(STATE)).get("regrade")
 except Exception: pass
 
 if fp is not None and fp==prev and os.path.exists(f"{OUT}/track_record.csv"):
-    print(f"[4/5] regrading track record… ⏭ skipped — no new finals since last regrade "
-          f"({fp['done']} completed games, {fp['picks']} logged picks unchanged)", flush=True)
-    r4=0
+    print(f"[5/5] regrading track record… ⏭ skipped — no new finals since the last regrade "
+          f"({fp['done']} completed games, week {fp['maxwk']})", flush=True)
+    r_grade=0
 else:
-    # regrade gets at most 60s (it's ~5s of pure CPU); the board rebuild gets whatever is left
-    r4=run_stage(4,"regrading track record (completed games -> Track Record)","build_track_record.py",min(60,_remaining()-30))
-    if r4==0 and fp is not None:
+    r_grade=run_stage(5,"regrading track record (completed games -> Track Record)","build_track_record.py",min(60,_remaining()))
+    if r_grade==0 and fp is not None:
         try: json.dump({"regrade":fp}, open(STATE,"w"))
         except Exception: pass
 
-r5=run_stage(5,"re-projecting board","project_slate.py",_remaining())
-
 print(f"\ntotal {time.time()-T0:.1f}s", flush=True)
-if r5!=0:
-    raise SystemExit(f"board rebuild did not complete ({r5}) — see output above")   # the only true failure for the UI
-if quota_msg:
-    print(f"⚠ finished, but data pulls were skipped: {quota_msg}")
-else:
-    print("✅ done. Completed games are in the Track Record; the board is re-projected.")
+if r_board!=0:
+    raise SystemExit(f"board rebuild did not complete ({r_board}) — see output above")   # the only true failure for the UI
+notes=[]
+if quota_msg: notes.append(quota_msg)
+if r_grade!=0: notes.append("Track Record not regraded (board is current)")
+print(("⚠ board updated, but: "+"; ".join(notes)) if notes else
+      "✅ done. Board re-projected and the Track Record is current.")

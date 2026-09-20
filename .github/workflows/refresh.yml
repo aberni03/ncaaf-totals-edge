@@ -1,0 +1,94 @@
+# Scheduled data refresh — does the heavy work OFF the Streamlit container.
+#
+# Why this exists: the dashboard's Refresh button runs the same update inside the web app's
+# ~1GB container. The regrade alone peaks around 271MB on top of the app itself (~300-400MB),
+# so at in-season data volumes it can get OOM-killed — which looks like an endless spinner and
+# loses the refreshed data (the container's disk is ephemeral and resets to this repo on reboot).
+#
+# A runner has 7GB and a full CPU, and anything it commits is DURABLE: the site redeploys with
+# the new data instead of reverting on the next restart.
+#
+# SETUP (one time): add two repository secrets under
+# Settings -> Secrets and variables -> Actions -> New repository secret
+#   CFBD_KEY  = your collegefootballdata.com key
+#   ODDS_KEY  = your the-odds-api.com key
+# Then this runs on its own. "Run workflow" on the Actions tab triggers it by hand any time.
+
+name: Refresh data
+
+on:
+  schedule:
+    # times are UTC. 12:00Z = 8am ET (overnight results in), 23:30Z = 7:30pm ET (openers posted)
+    - cron: "0 12 * * *"
+    - cron: "30 23 * * *"
+  workflow_dispatch:        # manual "Run workflow" button
+
+# never let two refreshes race each other into a push conflict
+concurrency:
+  group: refresh-data
+  cancel-in-progress: false
+
+permissions:
+  contents: write           # needed to commit the refreshed data
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        # streamlit isn't needed for the update scripts, but installing from requirements.txt
+        # keeps pandas/numpy/scikit-learn pinned exactly as the app uses them
+        run: pip install -r requirements.txt
+
+      - name: Write API keys
+        env:
+          CFBD_KEY: ${{ secrets.CFBD_KEY }}
+          ODDS_KEY: ${{ secrets.ODDS_KEY }}
+        run: |
+          if [ -z "$CFBD_KEY" ] || [ -z "$ODDS_KEY" ]; then
+            echo "::error::CFBD_KEY and/or ODDS_KEY repository secrets are not set — see the setup note at the top of this workflow."
+            exit 1
+          fi
+          printf '%s' "$CFBD_KEY" > .cfbd_key
+          printf '%s' "$ODDS_KEY" > .odds_key
+
+      - name: Run the full update
+        # generous budgets: a runner has real CPU and memory, so nothing needs to be rushed here
+        env:
+          REFRESH_TOTAL_BUDGET: "900"
+          REFRESH_PULL_BUDGET: "480"
+        run: python3 live/weekly_update.py 2026
+
+      - name: Commit refreshed data
+        run: |
+          rm -f .cfbd_key .odds_key            # never commit secrets (also gitignored)
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A data out
+          if git diff --cached --quiet; then
+            echo "no data changes — nothing to commit"
+            exit 0
+          fi
+          git commit -m "Scheduled refresh: results, lines, regraded track record, re-projected board [skip ci]"
+          # a concurrent push (e.g. a manual run) should rebase, not fail the job
+          for i in 1 2 3; do
+            git pull --rebase --autostash origin main && git push origin main && exit 0
+            echo "push attempt $i failed, retrying…"; sleep 5
+          done
+          exit 1
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "### Refresh finished" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          python3 -c "import json;m=json.load(open('out/slate_meta.json'));print('\n'.join(f'{k}: {v}' for k,v in m.items()))" >> $GITHUB_STEP_SUMMARY 2>/dev/null || echo "slate_meta.json unavailable" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
