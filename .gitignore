@@ -30,3 +30,6 @@ out/angle_frame.csv
 out/caliber_residuals.csv
 out/build_*.log
 out/pull*.log
+
+# refresh bookkeeping (local/ephemeral)
+out/.refresh_state.json

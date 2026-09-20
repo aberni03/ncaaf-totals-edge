@@ -14,13 +14,22 @@ PULL_BUDGET seconds total) and every step is independent — a slow or failing p
 that step and leaves its data untouched instead of stranding the whole refresh. The board
 rebuild ALWAYS runs last, so the visible board matches whatever data actually landed.
 """
-import os, sys, time, subprocess, datetime as dt, requests, pandas as pd
-ROOT=os.path.dirname(os.path.dirname(os.path.abspath(__file__))); DATA=ROOT+"/data"; HERE=os.path.dirname(os.path.abspath(__file__))
+import os, sys, time, json, subprocess, datetime as dt, requests, pandas as pd
+ROOT=os.path.dirname(os.path.dirname(os.path.abspath(__file__))); DATA=ROOT+"/data"; OUT=ROOT+"/out"; HERE=os.path.dirname(os.path.abspath(__file__))
+
+# Single-thread the children. numpy/sklearn size their thread pools from the HOST core count,
+# but the dashboard container gets a fraction of one CPU — oversubscribing there turns a 5s
+# job into minutes of contention. Predictions are deterministic either way.
+CHILD_ENV={**os.environ,"OMP_NUM_THREADS":"1","OPENBLAS_NUM_THREADS":"1","MKL_NUM_THREADS":"1",
+           "NUMEXPR_NUM_THREADS":"1","VECLIB_MAXIMUM_THREADS":"1"}
 KEY=open(f"{ROOT}/.cfbd_key").read().strip(); H={"Authorization":f"Bearer {KEY}"}; B="https://api.collegefootballdata.com"
 YR=int(sys.argv[1]) if len(sys.argv)>1 else 2026
 
 T0=time.time()
-PULL_BUDGET=float(os.environ.get("REFRESH_PULL_BUDGET","120"))   # seconds for ALL CFBD pulls
+# The dashboard kills this subprocess at 240s. We budget BELOW that so the job always exits
+# on its own with a message naming the slow step, instead of being killed mid-flight.
+TOTAL_BUDGET=float(os.environ.get("REFRESH_TOTAL_BUDGET","200"))  # whole job
+PULL_BUDGET=float(os.environ.get("REFRESH_PULL_BUDGET","100"))   # seconds for ALL CFBD pulls
 ATTEMPT_TIMEOUT=25                                               # per HTTP attempt (was 90)
 ATTEMPTS=2                                                       # (was 4 -> worst case 366s > the 300s cap)
 def _left(): return PULL_BUDGET-(time.time()-T0)
@@ -143,19 +152,61 @@ except SystemExit as e:          # quota/auth — stop pulling, but still rebuil
     quota_msg=str(e); print(f"      ⚠ {quota_msg}", flush=True)
 
 # The board rebuild ALWAYS runs: whatever data landed above, the displayed board matches it.
-print("[4/5] regrading track record (completed games -> Track Record)…", flush=True)
-t=time.time(); r4=subprocess.run([sys.executable, f"{HERE}/build_track_record.py"], cwd=ROOT, capture_output=True, text=True)
-print(f"      {'✓' if r4.returncode==0 else '⚠ FAILED'} ({time.time()-t:.1f}s)", flush=True)
-if r4.returncode!=0: print((r4.stderr or r4.stdout or "")[-400:], flush=True)
+# Both get a hard timeout — project_slate does its own network I/O, and requests' timeout is
+# per-socket-read, so a trickling response would otherwise hang with no upper bound.
+def run_stage(n, label, script, budget):
+    t=time.time(); print(f"[{n}/5] {label}…", flush=True)
+    if budget < 5:
+        print(f"      ⏱ skipped — out of time budget", flush=True); return None
+    try:
+        r=subprocess.run([sys.executable, f"{HERE}/{script}"], cwd=ROOT, capture_output=True, text=True,
+                         timeout=budget, env=CHILD_ENV)
+    except subprocess.TimeoutExpired as e:
+        got=(e.stdout.decode(errors="ignore") if isinstance(e.stdout,bytes) else (e.stdout or "")).strip()
+        print(f"      ⏱ TIMED OUT after {budget:.0f}s — {script} is the slow step", flush=True)
+        if got: print("        last output: "+" | ".join(got.splitlines()[-2:]), flush=True)
+        return "timeout"
+    print(f"      {'✓' if r.returncode==0 else '⚠ FAILED'} ({time.time()-t:.1f}s)", flush=True)
+    if r.returncode!=0: print((r.stderr or r.stdout or "")[-400:], flush=True)
+    return r.returncode
 
-print("[5/5] re-projecting board…", flush=True)
-t=time.time(); r5=subprocess.run([sys.executable, f"{HERE}/project_slate.py"], cwd=ROOT, capture_output=True, text=True)
-print(f"      {'✓' if r5.returncode==0 else '⚠ FAILED'} ({time.time()-t:.1f}s)", flush=True)
-if r5.returncode!=0: print((r5.stderr or r5.stdout or "")[-400:], flush=True)
+def _remaining(): return TOTAL_BUDGET-(time.time()-T0)
+
+# ---- skip the regrade when nothing new has finished ------------------------------------------
+# The Track Record only changes when a game goes final (or its lines/snapshot change). Repeat
+# clicks were paying for a full regrade every time; fingerprint the inputs and skip if identical.
+def _fingerprint():
+    try:
+        g=pd.read_csv(f"{DATA}/games.csv"); d=g[(g.season==YR)&(g.completed==True)&(g.home_div=="fbs")&(g.away_div=="fbs")]
+        L=pd.read_csv(f"{DATA}/lines.csv")
+        pk=f"{OUT}/picks_log.csv"
+        return dict(done=int(len(d)), maxwk=int(d.week.max()) if len(d) else 0,
+                    lines=int((L.season==YR).sum()),
+                    picks=int(len(pd.read_csv(pk))) if os.path.exists(pk) else 0)
+    except Exception:
+        return None
+
+STATE=f"{OUT}/.refresh_state.json"
+fp=_fingerprint(); prev=None
+try: prev=json.load(open(STATE)).get("regrade")
+except Exception: pass
+
+if fp is not None and fp==prev and os.path.exists(f"{OUT}/track_record.csv"):
+    print(f"[4/5] regrading track record… ⏭ skipped — no new finals since last regrade "
+          f"({fp['done']} completed games, {fp['picks']} logged picks unchanged)", flush=True)
+    r4=0
+else:
+    # regrade gets at most 60s (it's ~5s of pure CPU); the board rebuild gets whatever is left
+    r4=run_stage(4,"regrading track record (completed games -> Track Record)","build_track_record.py",min(60,_remaining()-30))
+    if r4==0 and fp is not None:
+        try: json.dump({"regrade":fp}, open(STATE,"w"))
+        except Exception: pass
+
+r5=run_stage(5,"re-projecting board","project_slate.py",_remaining())
 
 print(f"\ntotal {time.time()-T0:.1f}s", flush=True)
-if r5.returncode!=0:
-    raise SystemExit("board rebuild failed — see output above")   # the only true failure for the UI
+if r5!=0:
+    raise SystemExit(f"board rebuild did not complete ({r5}) — see output above")   # the only true failure for the UI
 if quota_msg:
     print(f"⚠ finished, but data pulls were skipped: {quota_msg}")
 else:
