@@ -252,8 +252,11 @@ def run_job(script, label, args=None):
     try:
         with st.spinner(f"{label}… (pulling results, re-grading & re-projecting — up to ~2 min)"):
             r=subprocess.run([sys.executable, f"{HERE}/{script}"]+(args or []), cwd=ROOT, capture_output=True, text=True, timeout=300)
-    except subprocess.TimeoutExpired:
-        st.session_state["_msg"]=("err","⚠️ The update didn't finish in time. Your data is unchanged — please try again in a minute.")
+    except subprocess.TimeoutExpired as e:
+        # show how far it got — each step prints its own line, so the tail names the slow one
+        got=(e.stdout or b"").decode(errors="ignore") if isinstance(e.stdout,bytes) else (e.stdout or "")
+        tail=" · ".join(l.strip() for l in got.strip().splitlines()[-3:]) or "no output before the cutoff"
+        st.session_state["_msg"]=("err",f"⚠️ A data provider didn't respond in time, so the board wasn't rebuilt. Try again in a minute.\n\nGot as far as: {tail}")
         st.rerun(); return
     if r.returncode==0:
         st.cache_data.clear(); st.session_state["_msg"]=("ok",f"✅ {label} complete."); st.rerun()

@@ -56,7 +56,7 @@ def _median(xs):
 
 def fetch_odds_api(markets="totals,spreads"):
     r=requests.get("https://api.the-odds-api.com/v4/sports/americanfootball_ncaaf/odds",
-        params={"apiKey":ODDS_KEY,"regions":"us","markets":markets,"oddsFormat":"american"},timeout=30)
+        params={"apiKey":ODDS_KEY,"regions":"us","markets":markets,"oddsFormat":"american"},timeout=25)
     r.raise_for_status()
     rem=r.headers.get("x-requests-remaining")
     rows=[]
@@ -102,7 +102,7 @@ def fetch_ap_top25(season):
     if c is not None: return c
     try:
         r=requests.get("https://api.collegefootballdata.com/rankings",params={"year":season},
-            headers={"Authorization":f"Bearer {CFBD_KEY}"},timeout=30)
+            headers={"Authorization":f"Bearer {CFBD_KEY}"},timeout=20)
         d=r.json(); aps=[(x["week"],p) for x in d for p in x.get("polls",[]) if p.get("poll")=="AP Top 25"]
         if not aps: return {}
         lw=max(w for w,_ in aps); poll=next(p for w,p in aps if w==lw)
@@ -118,7 +118,7 @@ def fetch_media(season):
     if c is not None: return {(h,a):o for h,a,o in c}
     try:
         r=requests.get("https://api.collegefootballdata.com/games/media",
-            params={"year":season,"seasonType":"regular"},headers={"Authorization":f"Bearer {CFBD_KEY}"},timeout=60)
+            params={"year":season,"seasonType":"regular"},headers={"Authorization":f"Bearer {CFBD_KEY}"},timeout=25)
         out={}
         for g in r.json():
             k=(g.get("homeTeam"),g.get("awayTeam")); ou=g.get("outlet")
@@ -133,7 +133,7 @@ def fetch_cfbd_lines(season, week):
     """Fallback / historical: CFBD lines incl. Bovada open."""
     r=requests.get("https://api.collegefootballdata.com/lines",
         params={"year":season,"week":week,"seasonType":"regular"},
-        headers={"Authorization":f"Bearer {CFBD_KEY}"},timeout=30)
+        headers={"Authorization":f"Bearer {CFBD_KEY}"},timeout=20)
     data=r.json() if r.ok else None
     if not isinstance(data,list):          # 429 quota / error body -> empty, never crash the refresh
         raise RuntimeError(f"CFBD {r.status_code}: {str(data)[:80]}")
