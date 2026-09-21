@@ -1,5 +1,5 @@
 """CFB Totals Edge — dashboard.  Run:  streamlit run live/app.py"""
-import os, sys, json, subprocess
+import os, sys, json, subprocess, requests
 from datetime import datetime, timezone
 from zoneinfo import ZoneInfo
 ET=ZoneInfo("America/New_York")   # every displayed date/time is Eastern (site is ET-keyed)
@@ -265,6 +265,29 @@ def run_job(script, label, args=None):
     else:
         st.session_state["_msg"]=("err",f"⚠️ {label} failed:\n{(r.stderr or r.stdout)[-600:]}")
 
+def trigger_github_refresh():
+    """Kick off the refresh on GitHub Actions (7GB runner) instead of the 1GB app container.
+    Non-blocking: the workflow pulls results + regrades + reprojects and commits; the site redeploys."""
+    try: tok=st.secrets.get("GITHUB_TOKEN")
+    except Exception: tok=None
+    if not tok:
+        st.session_state["_msg"]=("err","⚠️ Refresh isn't linked to GitHub yet. Add a **GITHUB_TOKEN** secret in Streamlit "
+            "(app → Settings → Secrets) with a token that has Actions write access. Meanwhile, data auto-refreshes twice daily.")
+        st.rerun(); return
+    try: repo=st.secrets.get("GITHUB_REPO") or "aberni03/ncaaf-totals-edge"
+    except Exception: repo="aberni03/ncaaf-totals-edge"
+    try:
+        r=requests.post(f"https://api.github.com/repos/{repo}/actions/workflows/refresh.yml/dispatches",
+            headers={"Authorization":f"Bearer {tok}","Accept":"application/vnd.github+json","X-GitHub-Api-Version":"2022-11-28"},
+            json={"ref":"main"}, timeout=15)
+        if r.status_code==204:
+            st.session_state["_msg"]=("ok","✅ Refresh started on GitHub — the board updates in ~1–2 minutes (it runs off the app, so no spinner). Reload the page shortly.")
+        else:
+            st.session_state["_msg"]=("err",f"⚠️ GitHub wouldn't start the refresh ({r.status_code}): {r.text[:160]}")
+    except Exception as e:
+        st.session_state["_msg"]=("err",f"⚠️ Couldn't reach GitHub to start the refresh: {e}")
+    st.rerun()
+
 st.markdown('<div class="hdrbar"><div class="loginbtn">🔒 Log in<span>coming soon</span></div>'
             '<div class="brand">🏈 CFB Totals <span class="ac">Edge</span> <span class="pro">MODEL</span></div>'
             '<div class="tag">Model-powered over/under picks — catch soft opening lines before they move.</div></div>',
@@ -320,8 +343,8 @@ with st.container(key="daterow"):
         st.markdown(f'<div class="dateline">{datetime.now(ET).strftime("%A, %B %-d, %Y").upper()} &nbsp;·&nbsp; updated <b>{_tstamp}</b>{_cr}{_warn}</div>',unsafe_allow_html=True)
     with _db:
         if st.button("↻ Refresh", key="refresh_btn", use_container_width=True,
-                     help="Live lines (this week + next) + box scores for completed games, then re-grade & re-project. ~1 odds credit."):
-            run_job("weekly_update.py","Refreshing lines + results")
+                     help="Runs a fresh pull + re-grade on GitHub (off the app, ~1–2 min) — the board updates automatically. Also auto-refreshes twice daily."):
+            trigger_github_refresh()
 nav_tabs=st.tabs(["This Week's Board","Track Record"])
 
 def fnum(x): return "—" if (x is None or (isinstance(x,float) and np.isnan(x))) else f"{x:.1f}"
