@@ -25525,3 +25525,5 @@ game_id,season,week,season_type,team,home_away,points,possessionTime,turnovers,y
 401868275,2026,3,regular,Presbyterian,away,14,,1.0,2.4,30.0,72.0,6.1,28.0,20.0,171.0,243.0,13.0
 401866634,2026,3,regular,Stony Brook,home,56,,0.0,5.7,56.0,321.0,8.3,24.0,17.0,198.0,519.0,26.0
 401866634,2026,3,regular,Rhode Island,away,24,,1.0,3.5,29.0,102.0,7.5,28.0,18.0,209.0,311.0,16.0
+401869941,2026,4,regular,Liberty,away,34,,2.0,5.8,45.0,263.0,12.3,18.0,12.0,222.0,485.0,24.0
+401869941,2026,4,regular,Coastal Carolina,home,17,,2.0,2.5,31.0,79.0,6.1,35.0,17.0,213.0,292.0,18.0
