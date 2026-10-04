@@ -34506,8 +34506,6 @@ game_id,season,week,season_type,home,away,provider,spread,spread_open,over_under
 401858476,2026,5,regular,Northwestern,Penn State,Bovada,2.5,3.0,47.0,47.0,110.0,-130.0
 401864509,2026,4,regular,Nevada,Air Force,DraftKings,4.5,4.5,50.5,48.5,190.0,-230.0
 401864509,2026,4,regular,Nevada,Air Force,Bovada,6.0,4.0,50.5,49.0,160.0,-185.0
-401856818,2026,5,regular,TCU,BYU,DraftKings,4.5,5.5,49.5,52.5,185.0,-225.0
-401856818,2026,5,regular,TCU,BYU,Bovada,6.0,6.0,48.0,49.0,190.0,-230.0
 401866426,2026,4,regular,Buffalo,Robert Morris,DraftKings,-27.5,-28.5,46.5,44.5,-3200.0,1400.0
 401866426,2026,4,regular,Buffalo,Robert Morris,Bovada,-28.0,-28.5,46.0,46.0,,
 401864512,2026,4,regular,Akron,UNLV,DraftKings,13.5,14.0,52.5,49.5,410.0,-550.0
@@ -34518,6 +34516,8 @@ game_id,season,week,season_type,home,away,provider,spread,spread_open,over_under
 401858478,2026,5,regular,USC,Washington,Bovada,-9.0,-10.0,58.0,55.5,-410.0,305.0
 401856813,2026,4,regular,Baylor,Colorado,Bovada,-8.5,-10.0,54.0,55.0,-410.0,305.0
 401856813,2026,4,regular,Baylor,Colorado,DraftKings,-8.5,-8.5,54.5,53.5,-380.0,300.0
+401856818,2026,5,regular,TCU,BYU,DraftKings,5.5,5.5,48.5,52.5,185.0,-225.0
+401856818,2026,5,regular,TCU,BYU,Bovada,6.0,6.0,48.0,49.0,190.0,-230.0
 401860892,2026,4,regular,Texas State,Incarnate Word,DraftKings,-30.5,-29.5,66.5,63.5,-3200.0,1400.0
 401860892,2026,4,regular,Texas State,Incarnate Word,Bovada,-30.5,-30.5,66.5,65.0,,
 401858239,2026,4,regular,Virginia,Delaware,DraftKings,-19.5,-20.5,52.5,,-1450.0,850.0
@@ -34730,6 +34730,8 @@ game_id,season,week,season_type,home,away,provider,spread,spread_open,over_under
 401874035,2026,1,regular,West Florida,Southern Illinois,DraftKings,19.5,,55.5,,,
 401864515,2026,5,regular,North Dakota State,Wyoming,DraftKings,-17.5,-21.0,44.5,47.5,-950.0,625.0
 401864515,2026,5,regular,North Dakota State,Wyoming,Bovada,-17.0,-20.0,44.5,46.0,-1400.0,750.0
+401862788,2026,5,regular,Rice,UTSA,DraftKings,11.5,12.5,56.5,52.5,380.0,-500.0
+401862788,2026,5,regular,Rice,UTSA,Bovada,12.5,11.0,56.0,54.5,310.0,-415.0
 401856807,2026,5,regular,Kansas,Middle Tennessee,Bovada,-20.5,-20.0,50.5,50.5,-1400.0,750.0
 401856807,2026,5,regular,Kansas,Middle Tennessee,DraftKings,-21.5,-21.5,51.5,52.5,-1600.0,900.0
 401871050,2026,5,regular,Delaware,Liberty,Bovada,7.0,7.0,51.5,50.0,225.0,-275.0
@@ -34738,6 +34740,10 @@ game_id,season,week,season_type,home,away,provider,spread,spread_open,over_under
 401866434,2026,5,regular,Kent State,Ohio,Bovada,3.5,5.5,51.0,50.5,175.0,-210.0
 401871049,2026,5,regular,New Mexico State,Western Kentucky,DraftKings,-1.5,-1.5,55.5,53.5,-125.0,105.0
 401871049,2026,5,regular,New Mexico State,Western Kentucky,Bovada,-1.5,-1.0,56.0,53.5,-120.0,100.0
+401871089,2026,5,regular,South Alabama,UL Monroe,DraftKings,-12.5,-14.5,57.5,55.5,-575.0,425.0
+401871089,2026,5,regular,South Alabama,UL Monroe,Bovada,-14.0,-14.0,56.5,56.0,-650.0,450.0
+401862792,2026,5,regular,South Florida,Temple,DraftKings,-5.5,-6.5,50.5,52.5,-218.0,180.0
+401862792,2026,5,regular,South Florida,Temple,Bovada,-5.5,-5.5,48.5,51.5,-220.0,180.0
 401858253,2026,5,regular,Florida State,Virginia,DraftKings,1.5,1.5,51.5,51.5,-108.0,-112.0
 401858253,2026,5,regular,Florida State,Virginia,Bovada,1.0,2.5,51.5,51.5,120.0,-140.0
 401866431,2026,5,regular,Ball State,Toledo,Bovada,21.0,19.5,52.0,51.5,750.0,-1400.0
@@ -34757,8 +34763,6 @@ game_id,season,week,season_type,home,away,provider,spread,spread_open,over_under
 401858251,2026,5,regular,Wake Forest,Stanford,Bovada,-14.5,-13.0,54.0,54.5,-550.0,390.0
 401856817,2026,5,regular,Arizona State,Baylor,Bovada,-3.5,-3.5,48.5,50.5,-180.0,155.0
 401856817,2026,5,regular,Arizona State,Baylor,DraftKings,-3.5,-3.5,48.5,51.5,-175.0,145.0
-401862792,2026,5,regular,South Florida,Temple,DraftKings,-5.5,-6.5,50.5,52.5,-218.0,180.0
-401862792,2026,5,regular,South Florida,Temple,Bovada,-5.5,-5.5,48.5,51.5,-220.0,180.0
 401856820,2026,5,regular,Arizona,Cincinnati,Bovada,-6.5,-7.0,55.5,55.0,-290.0,240.0
 401856820,2026,5,regular,Arizona,Cincinnati,DraftKings,-7.0,-8.5,56.5,54.5,-265.0,215.0
 401856822,2026,5,regular,Iowa State,West Virginia,Bovada,-3.0,-2.5,53.0,52.5,-145.0,125.0
@@ -34779,10 +34783,6 @@ game_id,season,week,season_type,home,away,provider,spread,spread_open,over_under
 401860898,2026,5,regular,Boise State,Utah State,DraftKings,-19.5,-20.5,51.5,49.5,-1450.0,850.0
 401858246,2026,5,regular,SMU,Boston College,DraftKings,-21.5,-21.0,55.5,56.5,-1650.0,950.0
 401858246,2026,5,regular,SMU,Boston College,Bovada,-21.5,-20.5,55.0,57.0,-1500.0,775.0
-401862788,2026,5,regular,Rice,UTSA,DraftKings,12.5,12.5,56.5,52.5,380.0,-500.0
-401862788,2026,5,regular,Rice,UTSA,Bovada,12.5,11.0,56.0,54.5,310.0,-415.0
-401856711,2026,5,regular,Texas A&M,Arkansas,DraftKings,-13.5,-14.5,50.5,51.5,-575.0,425.0
-401856711,2026,5,regular,Texas A&M,Arkansas,Bovada,-14.0,-14.0,50.0,51.5,-650.0,450.0
 401858472,2026,5,regular,Illinois,Purdue,Bovada,-10.0,-10.0,62.5,59.5,-370.0,285.0
 401858472,2026,5,regular,Illinois,Purdue,DraftKings,-9.5,-10.0,62.5,60.5,-375.0,295.0
 401869962,2026,5,regular,James Madison,Marshall,DraftKings,-14.5,-13.5,55.5,55.5,-750.0,525.0
@@ -34793,8 +34793,8 @@ game_id,season,week,season_type,home,away,provider,spread,spread_open,over_under
 401858247,2026,5,regular,UNLV,California,Bovada,-2.0,-2.0,53.0,53.5,-125.0,105.0
 401869956,2026,5,regular,Georgia State,Old Dominion,DraftKings,-1.5,1.5,51.5,52.5,-125.0,105.0
 401869956,2026,5,regular,Georgia State,Old Dominion,Bovada,-2.5,1.0,51.5,50.0,-105.0,-115.0
-401871089,2026,5,regular,South Alabama,UL Monroe,DraftKings,-13.5,-14.5,57.5,55.5,-575.0,425.0
-401871089,2026,5,regular,South Alabama,UL Monroe,Bovada,-14.0,-14.0,56.5,56.0,-650.0,450.0
+401856711,2026,5,regular,Texas A&M,Arkansas,DraftKings,-13.5,-14.5,51.5,51.5,-575.0,425.0
+401856711,2026,5,regular,Texas A&M,Arkansas,Bovada,-14.0,-14.0,50.0,51.5,-650.0,450.0
 401858479,2026,5,regular,Wisconsin,Michigan State,DraftKings,-8.5,-10.0,43.5,44.5,-355.0,280.0
 401858479,2026,5,regular,Wisconsin,Michigan State,Bovada,-9.0,-10.5,43.0,44.5,-410.0,305.0
 401856819,2026,5,regular,Houston,UCF,DraftKings,-10.5,-12.5,50.5,51.5,-425.0,330.0
@@ -34803,14 +34803,14 @@ game_id,season,week,season_type,home,away,provider,spread,spread_open,over_under
 401866432,2026,5,regular,Buffalo,Western Michigan,Bovada,13.0,15.0,46.0,48.5,450.0,-650.0
 401860921,2026,5,regular,Washington State,Fresno State,DraftKings,-2.5,-1.5,44.5,45.5,-130.0,110.0
 401860921,2026,5,regular,Washington State,Fresno State,Bovada,-2.0,1.0,45.5,46.5,-115.0,-105.0
-401869942,2026,5,regular,Coastal Carolina,Georgia Southern,DraftKings,2.5,-1.5,53.5,52.5,124.0,-148.0
-401869942,2026,5,regular,Coastal Carolina,Georgia Southern,Bovada,2.0,2.0,53.5,54.0,110.0,-130.0
 401869842,2026,5,regular,Louisiana Tech,Army,DraftKings,-1.5,3.5,46.5,44.5,-115.0,-105.0
 401869842,2026,5,regular,Louisiana Tech,Army,Bovada,1.0,3.0,47.0,46.5,145.0,-170.0
 401858477,2026,5,regular,Rutgers,Indiana,DraftKings,24.5,23.5,56.5,53.5,1200.0,-2400.0
 401858477,2026,5,regular,Rutgers,Indiana,Bovada,24.0,23.0,57.0,55.5,1000.0,-2500.0
 401858475,2026,5,regular,Nebraska,Maryland,DraftKings,-15.5,-12.5,52.5,53.5,-700.0,500.0
 401858475,2026,5,regular,Nebraska,Maryland,Bovada,-14.5,-14.0,52.5,52.0,-675.0,460.0
+401869942,2026,5,regular,Coastal Carolina,Georgia Southern,DraftKings,2.5,-1.5,53.5,52.5,124.0,-148.0
+401869942,2026,5,regular,Coastal Carolina,Georgia Southern,Bovada,2.0,2.0,53.5,54.0,110.0,-130.0
 401862787,2026,5,regular,Charlotte,Memphis,DraftKings,18.5,21.5,52.5,54.5,750.0,-1200.0
 401862787,2026,5,regular,Charlotte,Memphis,Bovada,20.5,20.5,52.0,54.0,750.0,-1400.0
 401869932,2026,5,regular,Louisiana,Arkansas State,DraftKings,-4.5,-4.0,49.5,49.5,-205.0,170.0
@@ -34823,7 +34823,6 @@ game_id,season,week,season_type,home,away,provider,spread,spread_open,over_under
 401867819,2026,5,regular,Columbia,Princeton,DraftKings,-1.5,1.5,42.5,42.5,-111.0,-112.0
 401868010,2026,5,regular,Lehigh,Fordham,DraftKings,-22.5,-21.5,44.5,44.5,-2800.0,1020.0
 401868094,2026,5,regular,Idaho,Montana State,DraftKings,14.5,15.5,56.5,57.5,391.0,-564.0
-401868309,2026,5,regular,Stephen F. Austin,Incarnate Word,DraftKings,-18.5,-17.5,55.5,56.5,-1300.0,700.0
 401871090,2026,6,regular,Troy,Southern Miss,DraftKings,-9.5,-8.5,48.5,48.5,-355.0,280.0
 401858481,2026,6,regular,Nebraska,Indiana,DraftKings,8.5,9.5,50.5,50.5,285.0,-360.0
 401856714,2026,6,regular,Florida,South Carolina,DraftKings,-14.5,-14.5,57.5,57.5,-675.0,490.0
@@ -34834,14 +34833,15 @@ game_id,season,week,season_type,home,away,provider,spread,spread_open,over_under
 401868220,2026,5,regular,San Diego,Davidson,DraftKings,-18.5,-14.5,62.5,63.5,-860.0,535.0
 401858487,2026,6,regular,Washington,Iowa,DraftKings,-1.5,-1.5,41.5,41.5,-112.0,-108.0
 401867828,2026,5,regular,Georgetown,Cornell,DraftKings,8.5,7.5,45.5,45.5,220.0,-285.0
-401866657,2026,5,regular,North Carolina Central,Campbell,DraftKings,13.5,8.5,57.5,60.5,369.0,-524.0
 401862790,2026,5,regular,Florida Atlantic,Texas Southern,Bovada,-44.0,-44.0,61.5,61.0,,
 401862790,2026,5,regular,Florida Atlantic,Texas Southern,DraftKings,-47.5,-43.5,62.5,60.5,,
 401868359,2026,5,regular,Grambling,Alcorn State,DraftKings,-6.0,-7.5,55.5,57.5,-234.0,183.0
 401868077,2026,5,regular,Cal Poly,Weber State,DraftKings,-6.0,-4.5,66.5,65.5,-238.0,186.0
 401866650,2026,5,regular,New Hampshire,Elon,DraftKings,7.5,10.5,45.5,44.5,239.0,-313.0
+401866657,2026,5,regular,North Carolina Central,Campbell,DraftKings,13.5,8.5,57.5,60.5,369.0,-524.0
 401862793,2026,5,regular,UAB,Samford,Bovada,-30.5,-30.5,54.0,52.5,,
 401862793,2026,5,regular,UAB,Samford,DraftKings,-30.5,-30.5,54.5,50.5,-4500.0,1700.0
+401868309,2026,5,regular,Stephen F. Austin,Incarnate Word,DraftKings,-18.5,-17.5,55.5,56.5,-1300.0,700.0
 401871066,2026,6,regular,Florida International,New Mexico State,DraftKings,-3.5,-3.5,47.5,47.5,-162.0,136.0
 401867869,2026,5,regular,North Dakota,Murray State,DraftKings,-37.5,-35.5,56.5,60.5,,
 401867986,2026,5,regular,South Carolina State,The Citadel,DraftKings,-17.5,-20.5,48.5,47.5,-950.0,574.0
@@ -34852,23 +34852,21 @@ game_id,season,week,season_type,home,away,provider,spread,spread_open,over_under
 401868160,2026,5,regular,Utah Tech,Southern Utah,DraftKings,12.5,14.5,55.5,56.5,361.0,-510.0
 401868086,2026,5,regular,UC Davis,Eastern Washington,DraftKings,-10.0,-9.5,61.5,60.5,-358.0,269.0
 401867899,2026,5,regular,Central Connecticut,Wagner,DraftKings,-14.0,-14.5,46.5,45.5,-630.0,426.0
-401867840,2026,5,regular,Harvard,Colgate,DraftKings,-4.5,,40.5,36.5,-200.0,158.0
-401868276,2026,5,regular,Presbyterian,St. Thomas (MN),DraftKings,28.5,24.5,61.5,54.5,1400.0,-7400.0
-401867688,2026,5,regular,Tarleton State,Chicago State,DraftKings,-50.5,-49.5,64.5,60.5,,
-401868295,2026,5,regular,Jackson State,Alabama A&M,DraftKings,-10.0,-9.5,54.5,49.5,-358.0,268.0
-401868173,2026,5,regular,Charleston Southern,Gardner-Webb,DraftKings,7.0,7.5,44.5,48.5,219.0,-285.0
-401856715,2026,6,regular,Kentucky,LSU,DraftKings,10.0,10.5,50.5,49.5,280.0,-355.0
-401869131,2026,5,regular,Lamar,Northwestern State,DraftKings,-40.5,,54.5,54.5,,
 401866653,2026,5,regular,Bryant,North Carolina A&T,DraftKings,-13.5,-15.5,47.5,45.5,-442.0,321.0
-401868375,2026,5,regular,Furman,Wofford,DraftKings,-4.0,-4.5,44.5,44.5,-188.0,149.0
-401868391,2026,5,regular,Western Carolina,Tennessee Tech,DraftKings,13.5,9.5,63.5,63.5,323.0,-445.0
-401868936,2026,5,regular,Southern,Arkansas-Pine Bluff,DraftKings,-3.0,-4.5,55.5,56.5,-143.0,115.0
-401867918,2026,5,regular,Robert Morris,Norfolk State,DraftKings,-1.5,-3.5,44.5,43.5,-125.0,100.0
-401868328,2026,5,regular,Bethune-Cookman,Alabama State,DraftKings,7.0,7.5,52.5,54.5,208.0,-269.0
+401868173,2026,5,regular,Charleston Southern,Gardner-Webb,DraftKings,7.0,7.5,44.5,48.5,219.0,-285.0
+401868143,2026,5,regular,Eastern Kentucky,North Alabama,DraftKings,-1.5,-1.5,49.5,47.5,-122.0,-102.0
 401869151,2026,5,regular,Houston Christian,Nicholls,DraftKings,-1.5,-1.5,53.5,51.5,-125.0,101.0
 401867848,2026,5,regular,Illinois State,South Dakota State,DraftKings,2.5,1.5,51.5,55.5,102.0,-127.0
-401868143,2026,5,regular,Eastern Kentucky,North Alabama,DraftKings,-1.5,-1.5,49.5,47.5,-122.0,-102.0
+401869131,2026,5,regular,Lamar,Northwestern State,DraftKings,-40.5,,54.5,54.5,,
+401868936,2026,5,regular,Southern,Arkansas-Pine Bluff,DraftKings,-3.0,-4.5,55.5,56.5,-143.0,115.0
 401868248,2026,5,regular,East Texas A&M,UT Rio Grande Valley,DraftKings,10.5,10.5,50.5,51.5,294.0,-398.0
+401868276,2026,5,regular,Presbyterian,St. Thomas (MN),DraftKings,28.5,24.5,61.5,54.5,1400.0,-7400.0
+401867840,2026,5,regular,Harvard,Colgate,DraftKings,-4.5,,40.5,36.5,-200.0,158.0
+401868391,2026,5,regular,Western Carolina,Tennessee Tech,DraftKings,13.5,9.5,63.5,63.5,323.0,-445.0
+401867688,2026,5,regular,Tarleton State,Chicago State,DraftKings,-50.5,-49.5,64.5,60.5,,
+401856715,2026,6,regular,Kentucky,LSU,DraftKings,10.0,10.5,50.5,49.5,280.0,-355.0
+401868375,2026,5,regular,Furman,Wofford,DraftKings,-4.0,-4.5,44.5,44.5,-188.0,149.0
+401867918,2026,5,regular,Robert Morris,Norfolk State,DraftKings,-1.5,-3.5,44.5,43.5,-125.0,100.0
 401867859,2026,5,regular,South Dakota,Indiana State,DraftKings,-16.5,-18.5,60.5,60.5,-960.0,586.0
 401866652,2026,5,regular,Maine,Sacred Heart,DraftKings,-2.5,-2.5,44.5,43.5,-136.0,110.0
 401868339,2026,5,regular,East Tennessee State,Chattanooga,DraftKings,-3.0,-3.0,52.5,53.5,-149.0,119.0
@@ -34879,6 +34877,8 @@ game_id,season,week,season_type,home,away,provider,spread,spread_open,over_under
 401868053,2026,5,regular,Abilene Christian,West Florida,DraftKings,-6.5,-2.5,48.5,48.5,-206.0,163.0
 401868064,2026,5,regular,Austin Peay,New Haven,DraftKings,-35.5,-35.5,50.5,50.5,,
 401867891,2026,5,regular,Southern Illinois,Youngstown State,DraftKings,4.0,3.5,64.5,62.5,148.0,-185.0
+401868328,2026,5,regular,Bethune-Cookman,Alabama State,DraftKings,7.0,7.5,51.5,54.5,208.0,-269.0
+401868295,2026,5,regular,Jackson State,Alabama A&M,DraftKings,-10.0,-9.5,54.5,49.5,-358.0,268.0
 401867910,2026,5,regular,Long Island University,Mercyhurst,DraftKings,-8.5,-9.5,47.5,42.5,-329.0,249.0
 401868029,2026,5,regular,Lafayette,Richmond,DraftKings,6.5,6.5,43.5,42.5,195.0,-249.0
 401867967,2026,5,regular,Villanova,Morgan State,DraftKings,-16.5,-10.5,48.5,45.5,-710.0,467.0
