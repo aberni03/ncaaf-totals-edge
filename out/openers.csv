@@ -170,55 +170,61 @@ season,week,home,away,opener,source
 2026,5,Coastal Carolina,Georgia Southern,54.0,cfbd
 2026,5,Louisiana Tech,Army,46.5,cfbd
 2026,5,Louisiana,Arkansas State,47.0,cfbd
-2026,6,Oregon,UCLA,58.5,odds
-2026,6,Oklahoma,Texas,48.5,odds
-2026,6,Troy,Southern Miss,50.5,odds
-2026,6,Kennesaw State,Jacksonville State,51.5,odds
-2026,6,Washington,Iowa,41.5,odds
-2026,6,BYU,Iowa State,50.5,odds
-2026,6,Florida,South Carolina,57.5,odds
-2026,6,Missouri,Texas A&M,50.5,odds
-2026,6,Nebraska,Indiana,49.5,odds
-2026,6,Kentucky,LSU,49.5,odds
-2026,6,Alabama,Georgia,49.5,odds
-2026,6,Penn State,USC,58.5,odds
-2026,6,Florida International,New Mexico State,50.5,odds
-2026,6,Liberty,Sam Houston,52.0,odds
-2026,6,Western Kentucky,Missouri State,55.5,odds
-2026,6,UTSA,South Florida,56.5,odds
-2026,6,Arkansas State,South Alabama,57.5,odds
-2026,6,Louisville,Florida State,57.5,odds
-2026,6,Utah State,Washington State,45.5,odds
-2026,6,West Virginia,Arizona,58.0,odds
-2026,6,NC State,Wake Forest,61.5,odds
-2026,6,Oklahoma State,UCF,51.5,odds
-2026,6,Pittsburgh,North Carolina,46.5,odds
-2026,6,Northwestern,Ball State,51.5,odds
-2026,6,California,Virginia Tech,51.5,odds
-2026,6,Vanderbilt,Ole Miss,57.5,odds
-2026,6,Kansas State,Houston,53.5,odds
-2026,6,Navy,Tulsa,53.5,odds
-2026,6,Michigan State,Illinois,51.5,odds
-2026,6,Notre Dame,Stanford,55.5,odds
-2026,6,Georgia Tech,Duke,51.5,odds
-2026,6,Arkansas,Tennessee,51.5,odds
-2026,6,Ohio State,Maryland,55.5,odds
-2026,6,Oregon State,San Diego State,57.5,odds
-2026,6,Virginia,Syracuse,50.5,odds
-2026,6,Purdue,Minnesota,48.5,odds
-2026,6,Utah,Kansas,51.5,odds
-2026,6,Fresno State,Boise State,48.5,odds
-2026,6,Arizona State,Hawai'i,52.5,odds
-2026,6,San José State,Wyoming,43.5,odds
-2026,6,Bowling Green,Sacramento State,46.0,odds
-2026,6,Army,Tulane,45.5,odds
-2026,6,App State,Old Dominion,51.5,odds
-2026,6,Akron,Eastern Michigan,50.5,odds
-2026,6,Toledo,Buffalo,55.0,odds
-2026,6,North Texas,Charlotte,61.5,odds
-2026,6,Ohio,Central Michigan,47.0,odds
-2026,6,Temple,UConn,52.5,odds
-2026,6,Memphis,UAB,58.5,odds
+2026,6,Oregon,UCLA,59.5,cfbd
+2026,6,Oklahoma,Texas,40.0,cfbd
+2026,6,Troy,Southern Miss,49.5,cfbd
+2026,6,Kennesaw State,Jacksonville State,50.0,cfbd
+2026,6,Washington,Iowa,42.5,cfbd
+2026,6,BYU,Iowa State,47.5,cfbd
+2026,6,Florida,South Carolina,61.0,cfbd
+2026,6,Missouri,Texas A&M,48.0,cfbd
+2026,6,Nebraska,Indiana,51.5,cfbd
+2026,6,Kentucky,LSU,55.5,cfbd
+2026,6,Alabama,Georgia,55.5,cfbd
+2026,6,Penn State,USC,56.0,cfbd
+2026,6,Florida International,New Mexico State,46.5,cfbd
+2026,6,Liberty,Sam Houston,52.5,cfbd
+2026,6,Western Kentucky,Missouri State,55.5,cfbd
+2026,6,UTSA,South Florida,52.5,cfbd
+2026,6,Arkansas State,South Alabama,58.0,cfbd
+2026,6,Louisville,Florida State,57.5,cfbd
+2026,6,Utah State,Washington State,43.5,cfbd
+2026,6,West Virginia,Arizona,60.0,cfbd
+2026,6,NC State,Wake Forest,60.0,cfbd
+2026,6,Oklahoma State,UCF,54.0,cfbd
+2026,6,Pittsburgh,North Carolina,47.0,cfbd
+2026,6,Northwestern,Ball State,53.0,cfbd
+2026,6,California,Virginia Tech,53.0,cfbd
+2026,6,Vanderbilt,Ole Miss,59.0,cfbd
+2026,6,Kansas State,Houston,56.0,cfbd
+2026,6,Navy,Tulsa,49.5,cfbd
+2026,6,Michigan State,Illinois,50.0,cfbd
+2026,6,Notre Dame,Stanford,54.5,cfbd
+2026,6,Georgia Tech,Duke,49.0,cfbd
+2026,6,Arkansas,Tennessee,50.0,cfbd
+2026,6,Ohio State,Maryland,56.0,cfbd
+2026,6,Oregon State,San Diego State,56.0,cfbd
+2026,6,Virginia,Syracuse,49.5,cfbd
+2026,6,Purdue,Minnesota,51.5,cfbd
+2026,6,Utah,Kansas,52.0,cfbd
+2026,6,Fresno State,Boise State,48.5,cfbd
+2026,6,Arizona State,Hawai'i,51.0,cfbd
+2026,6,San José State,Wyoming,44.0,cfbd
+2026,6,Bowling Green,Sacramento State,44.0,cfbd
+2026,6,Army,Tulane,45.5,cfbd
+2026,6,App State,Old Dominion,51.0,cfbd
+2026,6,Akron,Eastern Michigan,51.0,cfbd
+2026,6,Toledo,Buffalo,55.0,cfbd
+2026,6,North Texas,Charlotte,59.5,cfbd
+2026,6,Ohio,Central Michigan,47.0,cfbd
+2026,6,Temple,UConn,53.0,cfbd
+2026,6,Memphis,UAB,58.5,cfbd
 2026,6,Marshall,Coastal Carolina,55.5,odds
-2026,6,UNLV,North Dakota State,54.5,odds
-2026,6,Georgia Southern,James Madison,54.5,odds
+2026,6,UNLV,North Dakota State,49.5,cfbd
+2026,6,Georgia Southern,James Madison,53.5,cfbd
+2026,6,Massachusetts,Miami (OH),48.0,cfbd
+2026,6,Western Michigan,Kent State,45.5,cfbd
+2026,6,East Carolina,Rice,50.0,cfbd
+2026,6,UTEP,Nevada,49.5,cfbd
+2026,6,Northern Illinois,Air Force,47.5,cfbd
+2026,6,Louisiana Tech,Louisiana,49.5,cfbd
