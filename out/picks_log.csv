@@ -263,33 +263,33 @@ season,week,home,away,opener,proj,edge,side,close
 2026,7,Texas State,Colorado State,67.5,67.0,-0.5,UNDER,70.5
 2026,7,Tulane,Memphis,53.5,57.1,3.6,OVER,55.5
 2026,7,Purdue,Washington,52.5,54.7,2.2,OVER,50.5
-2026,7,Coastal Carolina,App State,52.0,50.0,-2.0,UNDER,49.25
-2026,7,Michigan State,Northwestern,48.5,49.7,1.2,OVER,49.25
-2026,7,Army,Florida Atlantic,56.5,57.2,0.7,OVER,54.75
-2026,7,LSU,Mississippi State,59.0,55.5,-3.5,UNDER,57.75
-2026,7,Texas,Florida,52.5,53.4,0.9,OVER,51.5
-2026,7,James Madison,Georgia State,58.0,62.5,4.5,OVER,57.75
-2026,7,Kansas State,Kansas,55.5,58.4,2.9,OVER,55.5
-2026,7,Bowling Green,Ball State,45.0,50.9,5.9,OVER,47.5
+2026,7,Coastal Carolina,App State,52.0,50.0,-2.0,UNDER,48.5
 2026,7,Indiana,Ohio State,50.5,49.3,-1.2,UNDER,50.25
 2026,7,SMU,Virginia,53.0,49.7,-3.3,UNDER,51.75
-2026,7,Boston College,Pittsburgh,44.0,45.0,1.0,OVER,42.5
+2026,7,Boston College,Pittsburgh,44.0,45.0,1.0,OVER,42.75
+2026,7,Bowling Green,Ball State,45.0,50.9,5.9,OVER,47.5
+2026,7,Michigan State,Northwestern,48.5,49.7,1.2,OVER,49.25
+2026,7,James Madison,Georgia State,58.0,62.5,4.5,OVER,57.5
+2026,7,Kansas State,Kansas,55.5,58.4,2.9,OVER,55.5
 2026,7,West Virginia,Cincinnati,62.0,58.2,-3.8,UNDER,63.5
-2026,7,Maryland,Rutgers,59.0,56.7,-2.3,UNDER,56.75
+2026,7,Texas,Florida,52.5,53.4,0.9,OVER,51.5
+2026,7,LSU,Mississippi State,59.0,55.5,-3.5,UNDER,57.25
+2026,7,Army,Florida Atlantic,56.5,57.2,0.7,OVER,54.5
+2026,7,Maryland,Rutgers,59.0,56.7,-2.3,UNDER,56.5
 2026,7,Temple,Charlotte,50.5,50.0,-0.5,UNDER,46.75
-2026,7,Buffalo,Massachusetts,45.0,50.5,5.5,OVER,41.5
+2026,7,Buffalo,Massachusetts,45.0,50.5,5.5,OVER,42.5
 2026,7,Central Michigan,Western Michigan,43.0,45.7,2.7,OVER,43.25
-2026,7,Duke,North Carolina,47.5,52.0,4.5,OVER,47.5
-2026,7,Tennessee,Alabama,53.5,52.5,-1.0,UNDER,51.75
-2026,7,Texas Tech,Arizona State,48.5,49.6,1.1,OVER,48.5
-2026,7,Air Force,UNLV,47.0,48.9,1.9,OVER,48.5
+2026,7,Georgia,Auburn,48.5,48.1,-0.4,UNDER,49.75
+2026,7,Michigan,Penn State,42.5,44.0,1.5,OVER,42.5
+2026,7,Wyoming,Northern Illinois,40.0,47.8,7.8,OVER,41.5
+2026,7,Duke,North Carolina,47.5,52.0,4.5,OVER,47.25
+2026,7,Virginia Tech,Georgia Tech,55.5,56.3,0.8,OVER,56.25
+2026,7,Texas Tech,Arizona State,48.5,49.6,1.1,OVER,49.75
 2026,7,Ole Miss,Missouri,59.5,55.6,-3.9,UNDER,58.75
+2026,7,Air Force,UNLV,47.0,48.9,1.9,OVER,47.75
 2026,7,Miami (OH),Akron,47.0,52.9,5.9,OVER,46.5
-2026,7,Wyoming,Northern Illinois,40.0,47.8,7.8,OVER,40.5
-2026,7,Virginia Tech,Georgia Tech,55.5,56.3,0.8,OVER,55.75
-2026,7,Michigan,Penn State,42.5,44.0,1.5,OVER,42.75
+2026,7,Tennessee,Alabama,53.5,52.5,-1.0,UNDER,50.75
 2026,7,Eastern Michigan,Toledo,53.0,52.7,-0.3,UNDER,53.5
-2026,7,Georgia,Auburn,48.5,48.1,-0.4,UNDER,49.5
 2026,7,Rice,Tulsa,46.0,49.2,3.2,OVER,46.5
 2026,7,Louisiana,Troy,49.5,54.8,5.3,OVER,49.25
 2026,7,Oregon State,Washington State,52.5,51.9,-0.6,UNDER,52.5
@@ -299,32 +299,35 @@ season,week,home,away,opener,proj,edge,side,close
 2026,7,Baylor,TCU,49.0,48.0,-1.0,UNDER,48.25
 2026,7,North Dakota State,Nevada,46.0,45.8,-0.2,UNDER,42.5
 2026,7,Miami,Florida State,56.5,51.8,-4.7,UNDER,56.5
-2026,7,Houston,Oklahoma State,61.0,59.9,-1.1,UNDER,62.5
-2026,7,Syracuse,Louisville,56.5,59.2,2.7,OVER,55.75
 2026,7,Oklahoma,Kentucky,43.5,47.2,3.7,OVER,43.5
 2026,7,BYU,Notre Dame,48.0,49.0,1.0,OVER,46.5
+2026,7,Houston,Oklahoma State,61.0,59.9,-1.1,UNDER,62.5
 2026,7,UCLA,Wisconsin,46.5,51.3,4.8,OVER,42.75
+2026,7,Syracuse,Louisville,56.5,59.2,2.7,OVER,55.75
+2026,7,UL Monroe,Louisiana Tech,54.5,59.8,5.3,OVER,55.5
 2026,7,UTSA,Navy,54.5,56.1,1.6,OVER,55.5
-2026,7,UL Monroe,Louisiana Tech,54.5,59.8,5.3,OVER,57.5
-2026,7,UTEP,San José State,50.0,53.4,3.4,OVER,46.75
-2026,7,Sacramento State,Ohio,49.5,50.4,0.9,OVER,48.25
+2026,7,UTEP,San José State,50.0,53.4,3.4,OVER,45.5
+2026,7,Sacramento State,Ohio,49.5,50.4,0.9,OVER,48.5
 2026,7,Colorado,Utah,49.0,50.1,1.1,OVER,49.5
-2026,7,California,Wake Forest,53.5,55.3,1.8,OVER,53.5
 2026,7,San Diego State,Fresno State,45.0,49.4,4.4,OVER,45.5
+2026,7,California,Wake Forest,53.5,55.3,1.8,OVER,53.5
 2026,7,Hawai'i,New Mexico,46.5,52.2,5.7,OVER,44.5
-2026,7,Oregon,Nebraska,52.5,53.6,1.1,OVER,51.75
+2026,7,Oregon,Nebraska,52.5,53.6,1.1,OVER,51.5
+2026,8,Florida International,Middle Tennessee,45.5,49.3,3.8,OVER,
 2026,8,Marshall,South Alabama,60.5,67.0,6.5,OVER,
+2026,8,Sam Houston,New Mexico State,47.5,51.9,4.4,OVER,
+2026,8,Kennesaw State,Liberty,47.5,51.2,3.7,OVER,
 2026,8,Clemson,Virginia Tech,49.5,49.2,-0.3,UNDER,49.5
-2026,8,Minnesota,Iowa,42.5,46.7,4.2,OVER,42.5
-2026,8,Arizona,Iowa State,50.5,51.8,1.3,OVER,50.5
-2026,8,Utah,Houston,55.5,54.1,-1.4,UNDER,55.5
 2026,8,UCF,BYU,45.5,45.9,0.4,OVER,45.5
+2026,8,Arizona,Iowa State,50.5,51.8,1.3,OVER,50.5
+2026,8,Minnesota,Iowa,42.5,46.7,4.2,OVER,42.5
+2026,8,Utah,Houston,55.5,54.1,-1.4,UNDER,56.5
 2026,8,Miami,Pittsburgh,53.5,51.2,-2.3,UNDER,53.5
-2026,8,Auburn,LSU,50.5,44.5,-6.0,UNDER,50.5
 2026,8,Michigan,Indiana,52.5,45.4,-7.1,UNDER,44.5
-2026,8,South Carolina,Tennessee,51.5,53.4,1.9,OVER,51.5
+2026,8,Auburn,LSU,50.5,44.5,-6.0,UNDER,50.5
 2026,8,Alabama,Texas A&M,54.5,54.5,-0.0,UNDER,53.5
-2026,8,Kentucky,Vanderbilt,52.5,51.1,-1.4,UNDER,52.5
+2026,8,South Carolina,Tennessee,51.5,53.4,1.9,OVER,51.5
 2026,8,Wisconsin,USC,52.5,50.6,-1.9,UNDER,52.5
+2026,8,Kentucky,Vanderbilt,52.5,51.1,-1.4,UNDER,52.5
 2026,8,Texas,Ole Miss,54.5,50.9,-3.6,UNDER,53.5
 2026,8,New Mexico,North Dakota State,46.5,49.1,2.6,OVER,46.5
