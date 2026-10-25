@@ -367,24 +367,24 @@ season,week,home,away,opener,proj,edge,side,close
 2026,8,North Carolina,Syracuse,46.0,48.4,2.4,OVER,
 2026,8,Arizona,Iowa State,51.5,50.2,-1.3,UNDER,
 2026,8,Tulane,UTSA,51.5,51.0,-0.5,UNDER,
-2026,8,New Mexico,North Dakota State,42.5,45.5,3.0,OVER,
-2026,8,Utah,Houston,56.5,56.8,0.3,OVER,
-2026,9,Western Kentucky,Delaware,59.5,54.7,-4.8,UNDER,
-2026,9,Missouri State,Sam Houston,51.5,50.4,-1.1,UNDER,
-2026,9,Middle Tennessee,Kennesaw State,50.5,56.2,5.7,OVER,
+2026,8,New Mexico,North Dakota State,42.5,45.2,2.7,OVER,39.5
+2026,8,Utah,Houston,56.5,57.2,0.7,OVER,57.25
+2026,9,Western Kentucky,Delaware,59.5,54.6,-4.9,UNDER,
+2026,9,Missouri State,Sam Houston,51.5,50.3,-1.2,UNDER,
+2026,9,Middle Tennessee,Kennesaw State,50.5,56.4,5.9,OVER,
 2026,9,New Mexico State,Jacksonville State,49.5,51.6,2.1,OVER,
-2026,9,Oregon,Northwestern,50.5,47.1,-3.4,UNDER,
-2026,9,Iowa,Wisconsin,39.5,44.4,4.9,OVER,
-2026,9,Navy,Notre Dame,53.5,53.0,-0.5,UNDER,
-2026,9,Texas Tech,Arizona,52.5,52.7,0.2,OVER,
-2026,9,Ole Miss,Auburn,53.5,54.7,1.2,OVER,
-2026,9,BYU,Arizona State,51.5,51.5,-0.0,UNDER,
-2026,9,Georgia,Florida,53.5,58.0,4.5,OVER,
-2026,9,Indiana,Minnesota,45.5,48.0,2.5,OVER,
-2026,9,Cincinnati,Utah,56.5,58.2,1.7,OVER,
-2026,9,Oklahoma,South Carolina,43.5,47.2,3.7,OVER,
-2026,9,USC,Ohio State,53.5,62.0,8.5,OVER,
-2026,9,North Carolina,Miami,50.5,50.7,0.2,OVER,
+2026,9,Oregon,Northwestern,50.5,53.2,2.7,OVER,52.5
+2026,9,Iowa,Wisconsin,39.5,44.6,5.1,OVER,39.5
+2026,9,Navy,Notre Dame,53.5,53.3,-0.2,UNDER,53.5
+2026,9,Texas Tech,Arizona,52.5,52.8,0.3,OVER,54.5
+2026,9,Ole Miss,Auburn,53.5,53.3,-0.2,UNDER,53.5
+2026,9,Indiana,Minnesota,45.5,46.8,1.3,OVER,45.5
+2026,9,BYU,Arizona State,51.5,51.3,-0.2,UNDER,51.5
+2026,9,Georgia,Florida,53.5,57.3,3.8,OVER,56.5
+2026,9,Cincinnati,Utah,56.5,57.7,1.2,OVER,56.5
+2026,9,Oklahoma,South Carolina,43.5,48.3,4.8,OVER,43.5
+2026,9,North Carolina,Miami,50.5,51.3,0.8,OVER,50.5
+2026,9,USC,Ohio State,53.5,61.7,8.2,OVER,53.5
 2026,9,Arkansas,Missouri,48.5,50.6,2.1,OVER,
-2026,9,Nebraska,Washington,48.5,53.7,5.2,OVER,
+2026,9,Nebraska,Washington,48.5,55.6,7.1,OVER,49.5
 2026,9,Fresno State,Oregon State,56.5,54.5,-2.0,UNDER,
