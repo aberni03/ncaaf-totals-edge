@@ -26679,5 +26679,7 @@ game_id,season,week,season_type,team,home_away,points,possessionTime,turnovers,y
 401871058,2026,9,regular,Middle Tennessee,home,28,,2.0,4.4,45.0,197.0,4.2,44.0,21.0,183.0,380.0,22.0
 401871072,2026,9,regular,Sam Houston,away,3,,1.0,1.0,25.0,26.0,7.4,35.0,20.0,258.0,284.0,17.0
 401871072,2026,9,regular,Missouri State,home,24,,0.0,3.3,39.0,129.0,10.2,18.0,12.0,184.0,313.0,16.0
+401867969,2026,9,regular,South Carolina State,away,51,,1.0,5.8,37.0,213.0,7.8,38.0,28.0,296.0,509.0,30.0
+401867969,2026,9,regular,Morgan State,home,10,,1.0,-0.9,14.0,-12.0,4.8,34.0,21.0,162.0,150.0,10.0
 401871057,2026,9,regular,New Mexico State,home,0,,1.0,5.6,34.0,192.0,1.5,19.0,6.0,29.0,221.0,11.0
 401871057,2026,9,regular,Jacksonville State,away,24,,2.0,7.0,46.0,324.0,6.4,17.0,11.0,109.0,433.0,23.0
