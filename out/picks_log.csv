@@ -423,21 +423,24 @@ season,week,home,away,opener,proj,edge,side,close
 2026,9,Memphis,Army,58.0,58.2,0.2,OVER,60.25
 2026,9,Nebraska,Washington,50.0,55.4,5.4,OVER,49.75
 2026,9,Boise State,Texas State,64.0,61.4,-2.6,UNDER,63.5
-2026,9,UNLV,Northern Illinois,54.0,51.4,-2.6,UNDER,55.0
-2026,9,Fresno State,Oregon State,56.5,54.1,-2.4,UNDER,58.0
-2026,10,Akron,Ohio,49.5,52.8,3.3,OVER,
-2026,10,Miami (OH),Buffalo,46.5,51.3,4.8,OVER,
-2026,10,Eastern Michigan,Central Michigan,47.5,47.4,-0.1,UNDER,
-2026,10,SMU,Virginia Tech,57.5,55.5,-2.0,UNDER,57.5
-2026,10,Northwestern,Iowa,42.5,48.8,6.3,OVER,42.5
-2026,10,Minnesota,UCLA,42.5,46.1,3.6,OVER,42.5
-2026,10,Michigan,Michigan State,50.5,42.9,-7.6,UNDER,39.5
-2026,10,Missouri,Texas,51.5,46.3,-5.2,UNDER,49.5
-2026,10,Utah,BYU,48.5,49.5,1.0,OVER,48.5
-2026,10,Ohio State,Oregon,52.5,49.3,-3.2,UNDER,45.5
+2026,9,UNLV,Northern Illinois,54.0,53.3,-0.7,UNDER,55.0
+2026,9,Fresno State,Oregon State,56.5,54.4,-2.1,UNDER,57.5
+2026,10,Akron,Ohio,49.5,52.7,3.2,OVER,49.5
+2026,10,Miami (OH),Buffalo,46.5,51.3,4.8,OVER,45.5
+2026,10,Sacramento State,Toledo,51.5,54.8,3.3,OVER,51.5
+2026,10,Eastern Michigan,Central Michigan,47.5,47.3,-0.2,UNDER,46.5
+2026,10,Florida Atlantic,UTSA,71.5,62.8,-8.7,UNDER,70.5
+2026,10,Southern Miss,James Madison,55.5,57.9,2.4,OVER,56.5
+2026,10,SMU,Virginia Tech,57.5,53.9,-3.6,UNDER,56.5
+2026,10,Northwestern,Iowa,42.5,52.3,9.8,OVER,42.5
+2026,10,Minnesota,UCLA,42.5,43.9,1.4,OVER,42.5
+2026,10,Michigan,Michigan State,50.5,43.2,-7.3,UNDER,39.5
+2026,10,Missouri,Texas,51.5,46.5,-5.0,UNDER,49.5
+2026,10,Utah,BYU,48.5,52.0,3.5,OVER,48.5
+2026,10,Ohio State,Oregon,52.5,49.2,-3.3,UNDER,45.5
 2026,10,LSU,Alabama,54.5,54.2,-0.3,UNDER,52.5
-2026,10,Tennessee,Kentucky,49.5,48.6,-0.9,UNDER,50.5
-2026,10,Army,Air Force,52.5,49.0,-3.5,UNDER,50.5
-2026,10,Notre Dame,Miami,54.5,56.4,1.9,OVER,55.5
-2026,10,Ole Miss,Georgia,55.5,55.5,-0.0,UNDER,56.5
-2026,10,Florida,Oklahoma,48.5,54.8,6.3,OVER,48.5
+2026,10,Tennessee,Kentucky,49.5,47.1,-2.4,UNDER,50.5
+2026,10,Notre Dame,Miami,54.5,54.7,0.2,OVER,55.5
+2026,10,Army,Air Force,52.5,48.3,-4.2,UNDER,50.5
+2026,10,Ole Miss,Georgia,55.5,53.1,-2.4,UNDER,56.5
+2026,10,Florida,Oklahoma,48.5,54.2,5.7,OVER,48.5
