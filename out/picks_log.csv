@@ -560,66 +560,66 @@ season,week,home,away,opener,proj,edge,side,close
 2026,12,Massachusetts,Akron,46.5,52.3,5.8,OVER,47.5
 2026,12,Buffalo,Central Michigan,43.5,50.1,6.6,OVER,46.25
 2026,12,Temple,Rice,48.5,49.1,0.6,OVER,51.5
-2026,12,UCF,Iowa State,54.0,53.0,-1.0,UNDER,47.75
-2026,12,Duke,Clemson,43.5,43.2,-0.3,UNDER,41.25
-2026,12,Toledo,Bowling Green,48.5,52.6,4.1,OVER,48.5
-2026,12,Air Force,UTEP,45.5,49.2,3.7,OVER,47.75
-2026,12,Michigan State,Oregon,44.0,45.5,1.5,OVER,44.5
-2026,12,Wyoming,New Mexico,37.0,46.0,9.0,OVER,37.5
-2026,12,Minnesota,Northwestern,43.0,47.7,4.7,OVER,41.5
-2026,12,Purdue,Wisconsin,44.5,45.0,0.5,OVER,46.5
-2026,12,Boston College,Syracuse,51.0,51.0,-0.0,UNDER,51.5
-2026,12,Nebraska,Ohio State,43.5,50.8,7.3,OVER,41.5
-2026,12,Army,East Carolina,44.0,48.8,4.8,OVER,46.5
-2026,12,Kansas,BYU,49.0,51.6,2.6,OVER,46.75
-2026,12,Navy,Memphis,66.5,64.5,-2.0,UNDER,67.25
-2026,12,Tulane,North Texas,57.0,59.2,2.2,OVER,55.75
+2026,12,UCF,Iowa State,54.0,53.1,-0.9,UNDER,49.25
+2026,12,Duke,Clemson,43.5,43.2,-0.3,UNDER,41.5
+2026,12,Toledo,Bowling Green,48.5,52.6,4.1,OVER,45.75
+2026,12,Air Force,UTEP,45.5,49.2,3.7,OVER,47.5
+2026,12,Michigan State,Oregon,44.0,45.5,1.5,OVER,43.5
+2026,12,Wyoming,New Mexico,37.0,46.0,9.0,OVER,37.75
 2026,12,Cincinnati,Colorado,61.0,55.3,-5.7,UNDER,57.5
-2026,12,Florida,Vanderbilt,47.0,48.1,1.1,OVER,46.25
-2026,12,Georgia Tech,Wake Forest,57.5,53.6,-3.9,UNDER,56.5
+2026,12,Purdue,Wisconsin,44.5,45.0,0.5,OVER,46.5
+2026,12,Army,East Carolina,44.0,48.8,4.8,OVER,46.5
+2026,12,Boston College,Syracuse,51.0,51.0,-0.0,UNDER,51.75
+2026,12,Nebraska,Ohio State,43.5,50.8,7.3,OVER,41.5
+2026,12,Navy,Memphis,66.5,64.5,-2.0,UNDER,67.25
+2026,12,Kansas,BYU,49.0,51.6,2.6,OVER,46.75
+2026,12,Tulane,North Texas,57.0,59.2,2.2,OVER,56.0
+2026,12,Georgia Tech,Wake Forest,57.5,53.6,-3.9,UNDER,56.25
+2026,12,Florida,Vanderbilt,47.0,48.1,1.1,OVER,45.5
+2026,12,Minnesota,Northwestern,43.0,47.7,4.7,OVER,41.5
 2026,12,Virginia,North Carolina,43.5,43.1,-0.4,UNDER,42.5
 2026,12,Liberty,Western Kentucky,53.5,54.7,1.2,OVER,53.0
-2026,12,West Virginia,Houston,70.5,61.3,-9.2,UNDER,70.5
-2026,12,Jacksonville State,Missouri State,52.5,51.2,-1.3,UNDER,52.5
+2026,12,West Virginia,Houston,70.5,61.3,-9.2,UNDER,70.75
 2026,12,Tulsa,Charlotte,52.5,52.2,-0.3,UNDER,51.75
+2026,12,Jacksonville State,Missouri State,52.5,51.2,-1.3,UNDER,52.5
 2026,12,Sam Houston,Middle Tennessee,49.0,53.7,4.7,OVER,48.25
+2026,12,Illinois,Iowa,42.5,51.2,8.7,OVER,40.5
+2026,12,App State,UL Monroe,50.5,52.8,2.3,OVER,50.0
 2026,12,Florida Atlantic,South Florida,66.0,54.2,-11.8,UNDER,64.25
-2026,12,App State,UL Monroe,50.5,52.8,2.3,OVER,49.5
-2026,12,Illinois,Iowa,42.5,51.2,8.7,OVER,40.25
-2026,12,New Mexico State,Delaware,53.5,50.6,-2.9,UNDER,54.25
 2026,12,Louisiana,Coastal Carolina,51.0,52.7,1.7,OVER,50.5
 2026,12,Kennesaw State,Florida International,45.0,48.0,3.0,OVER,44.5
+2026,12,New Mexico State,Delaware,53.5,50.6,-2.9,UNDER,53.5
 2026,12,UConn,Old Dominion,47.5,47.6,0.1,OVER,47.5
-2026,12,Michigan,UCLA,39.0,44.3,5.3,OVER,37.5
-2026,12,Baylor,Texas Tech,57.0,52.9,-4.1,UNDER,56.25
-2026,12,Tennessee,LSU,46.0,47.6,1.6,OVER,45.75
-2026,12,Penn State,Rutgers,51.0,54.3,3.3,OVER,49.5
-2026,12,Washington,Indiana,44.0,50.8,6.8,OVER,44.25
 2026,12,Texas,Arkansas,47.0,48.8,1.8,OVER,47.5
+2026,12,Washington,Indiana,44.0,50.8,6.8,OVER,44.25
+2026,12,Baylor,Texas Tech,57.0,52.9,-4.1,UNDER,56.5
 2026,12,Florida State,NC State,55.0,58.6,3.6,OVER,56.5
+2026,12,Michigan,UCLA,39.0,44.3,5.3,OVER,37.5
+2026,12,Penn State,Rutgers,51.0,54.3,3.3,OVER,49.5
+2026,12,Tennessee,LSU,46.0,47.6,1.6,OVER,45.75
 2026,12,Oklahoma,Texas A&M,38.5,41.7,3.2,OVER,38.25
-2026,12,Southern Miss,South Alabama,63.5,64.5,1.0,OVER,66.5
 2026,12,Troy,Georgia Southern,49.0,50.7,1.7,OVER,48.5
+2026,12,Southern Miss,South Alabama,63.5,64.5,1.0,OVER,66.25
 2026,12,North Dakota State,Northern Illinois,45.5,50.0,4.5,OVER,44.5
 2026,12,Marshall,Georgia State,58.0,62.9,4.9,OVER,55.25
 2026,12,Texas State,Washington State,60.5,55.6,-4.9,UNDER,62.5
-2026,12,USC,Maryland,57.5,54.6,-2.9,UNDER,57.75
-2026,12,San José State,UNLV,46.5,53.8,7.3,OVER,47.5
-2026,12,Kansas State,Arizona,52.5,55.8,3.3,OVER,52.25
-2026,12,Miami,Virginia Tech,61.0,62.1,1.1,OVER,60.75
+2026,12,USC,Maryland,57.5,54.6,-2.9,UNDER,57.5
 2026,12,Louisiana Tech,Arkansas State,53.0,54.8,1.8,OVER,53.75
+2026,12,San José State,UNLV,46.5,53.8,7.3,OVER,47.75
+2026,12,Kansas State,Arizona,52.5,55.8,3.3,OVER,51.75
+2026,12,Miami,Virginia Tech,61.0,62.1,1.1,OVER,60.75
+2026,12,Missouri,Kentucky,48.5,46.7,-1.8,UNDER,48.5
 2026,12,Fresno State,Colorado State,64.0,61.6,-2.4,UNDER,66.5
+2026,12,Notre Dame,SMU,57.0,55.4,-1.6,UNDER,56.5
 2026,12,South Carolina,Georgia,51.0,50.6,-0.4,UNDER,51.5
 2026,12,California,Stanford,55.5,58.1,2.6,OVER,56.25
-2026,12,Notre Dame,SMU,57.0,55.4,-1.6,UNDER,56.25
 2026,12,Louisville,Pittsburgh,50.5,52.5,2.0,OVER,50.5
-2026,12,Missouri,Kentucky,48.5,46.7,-1.8,UNDER,48.5
 2026,12,UAB,UTSA,52.0,55.0,3.0,OVER,50.25
 2026,12,TCU,Utah,46.5,49.2,2.7,OVER,46.5
-2026,12,Boise State,San Diego State,62.5,56.1,-6.4,UNDER,60.75
+2026,12,Boise State,San Diego State,62.5,56.2,-6.3,UNDER,60.75
 2026,12,Arizona State,Oklahoma State,62.0,56.3,-5.7,UNDER,59.5
-2026,12,Oregon State,Utah State,51.5,50.2,-1.3,UNDER,50.25
 2026,12,Nevada,Hawai'i,40.0,50.4,10.4,OVER,40.5
+2026,12,Oregon State,Utah State,51.5,50.2,-1.3,UNDER,50.25
 2026,13,Eastern Michigan,Kent State,45.5,46.1,0.6,OVER,
 2026,13,Western Michigan,Miami (OH),47.5,45.8,-1.7,UNDER,
 2026,13,Texas Tech,TCU,47.5,55.0,7.5,OVER,47.5
@@ -627,12 +627,12 @@ season,week,home,away,opener,proj,edge,side,close
 2026,13,Iowa,Nebraska,39.5,44.0,4.5,OVER,38.5
 2026,13,Texas A&M,Texas,53.5,44.8,-8.7,UNDER,41.5
 2026,13,Indiana,Purdue,52.5,57.0,4.5,OVER,
-2026,13,Kentucky,Louisville,55.0,51.2,-3.8,UNDER,54.5
 2026,13,Alabama,Auburn,52.5,48.6,-3.9,UNDER,50.5
-2026,13,Wake Forest,Duke,53.0,51.4,-1.6,UNDER,52.5
 2026,13,Oregon,Washington,54.5,52.0,-2.5,UNDER,48.5
-2026,13,Syracuse,Notre Dame,55.0,54.5,-0.5,UNDER,54.5
+2026,13,Wake Forest,Duke,53.0,51.4,-1.6,UNDER,52.5
+2026,13,Kentucky,Louisville,55.0,51.2,-3.8,UNDER,54.5
 2026,13,Ohio State,Michigan,45.5,44.6,-0.9,UNDER,41.5
+2026,13,Syracuse,Notre Dame,55.0,54.5,-0.5,UNDER,54.5
 2026,13,UCLA,USC,52.0,53.4,1.4,OVER,52.5
 2026,13,Missouri,Oklahoma,42.0,46.3,4.3,OVER,42.5
 2026,13,Arizona,Arizona State,52.5,54.4,1.9,OVER,52.5
