@@ -594,69 +594,71 @@ season,week,home,away,opener,source
 2026,12,Massachusetts,Akron,46.5,cfbd
 2026,12,Oklahoma,Texas A&M,38.5,cfbd
 2026,12,App State,UL Monroe,50.5,cfbd
-2026,13,Texas Tech,TCU,47.5,odds
-2026,13,Iowa,Nebraska,39.5,odds
-2026,13,Texas A&M,Texas,53.5,odds
-2026,13,Kentucky,Louisville,55.0,odds
-2026,13,Indiana,Purdue,52.5,odds
-2026,13,Wake Forest,Duke,53.0,odds
-2026,13,Alabama,Auburn,52.5,odds
-2026,13,Oregon,Washington,54.5,odds
-2026,13,Syracuse,Notre Dame,55.0,odds
-2026,13,Ohio State,Michigan,45.5,odds
-2026,13,UCLA,USC,52.0,odds
-2026,13,Missouri,Oklahoma,42.0,odds
-2026,13,Arizona,Arizona State,52.5,odds
-2026,13,Eastern Michigan,Kent State,45.5,odds
-2026,13,Western Michigan,Miami (OH),47.5,odds
-2026,13,Akron,Buffalo,46.5,odds
-2026,13,Ole Miss,Mississippi State,57.5,odds
-2026,13,Northwestern,Illinois,47.5,odds
-2026,13,UTSA,Tulsa,60.5,odds
-2026,13,Ohio,Toledo,49.5,odds
-2026,13,South Alabama,App State,56.5,odds
-2026,13,Florida State,Florida,52.5,odds
-2026,13,San José State,North Dakota State,39.25,odds
-2026,13,Memphis,Temple,64.5,odds
-2026,13,New Mexico,Air Force,41.5,odds
-2026,13,Wisconsin,Minnesota,36.5,odds
-2026,13,Utah,West Virginia,69.5,odds
-2026,13,Georgia Southern,Louisiana Tech,52.5,odds
-2026,13,Ball State,Central Michigan,46.5,odds
-2026,13,North Carolina,NC State,55.5,odds
-2026,13,Wyoming,UConn,48.75,odds
-2026,13,Charlotte,Navy,57.25,odds
-2026,13,Miami,Boston College,53.25,odds
-2026,13,Arkansas,LSU,47.0,odds
-2026,13,Old Dominion,Southern Miss,51.0,odds
-2026,13,East Carolina,Florida Atlantic,55.5,odds
-2026,13,Western Kentucky,Kennesaw State,54.5,odds
-2026,13,Georgia State,Louisiana,56.5,odds
-2026,13,Missouri State,Liberty,51.5,odds
-2026,13,James Madison,Coastal Carolina,55.75,odds
-2026,13,Rice,Army,48.5,odds
-2026,13,Florida International,Sam Houston,41.25,odds
-2026,13,Colorado,UCF,51.5,odds
-2026,13,Middle Tennessee,New Mexico State,52.5,odds
-2026,13,Iowa State,Kansas State,54.5,odds
-2026,13,Arkansas State,Troy,46.5,odds
-2026,13,Virginia Tech,Virginia,52.5,odds
-2026,13,Clemson,South Carolina,53.5,odds
-2026,13,BYU,Cincinnati,56.25,odds
-2026,13,Georgia,Georgia Tech,55.0,odds
-2026,13,Delaware,Jacksonville State,57.5,odds
-2026,13,Northern Illinois,UTEP,48.5,odds
-2026,13,Stanford,SMU,60.5,odds
-2026,13,Maryland,Penn State,50.25,odds
-2026,13,South Florida,Tulane,44.0,odds
-2026,13,North Texas,UAB,48.5,odds
-2026,13,Rutgers,Michigan State,48.0,odds
-2026,13,Oklahoma State,Kansas,67.5,odds
-2026,13,Washington State,San Diego State,46.5,odds
-2026,13,Vanderbilt,Tennessee,57.5,odds
-2026,13,California,Pittsburgh,47.5,odds
-2026,13,UNLV,Nevada,43.25,odds
-2026,13,Utah State,Texas State,53.5,odds
-2026,13,Houston,Baylor,55.5,odds
-2026,13,Hawai'i,Sacramento State,39.5,odds
+2026,13,Texas Tech,TCU,46.5,cfbd
+2026,13,Iowa,Nebraska,39.5,cfbd
+2026,13,Texas A&M,Texas,40.5,cfbd
+2026,13,Kentucky,Louisville,55.5,cfbd
+2026,13,Indiana,Purdue,52.0,cfbd
+2026,13,Wake Forest,Duke,56.0,cfbd
+2026,13,Alabama,Auburn,49.0,cfbd
+2026,13,Oregon,Washington,49.5,cfbd
+2026,13,Syracuse,Notre Dame,53.0,cfbd
+2026,13,Ohio State,Michigan,38.5,cfbd
+2026,13,UCLA,USC,46.0,cfbd
+2026,13,Missouri,Oklahoma,41.5,cfbd
+2026,13,Arizona,Arizona State,54.0,cfbd
+2026,13,Eastern Michigan,Kent State,45.5,cfbd
+2026,13,Western Michigan,Miami (OH),45.5,cfbd
+2026,13,Akron,Buffalo,50.5,cfbd
+2026,13,Ole Miss,Mississippi State,56.5,cfbd
+2026,13,Northwestern,Illinois,49.5,cfbd
+2026,13,UTSA,Tulsa,58.5,cfbd
+2026,13,Ohio,Toledo,49.5,cfbd
+2026,13,South Alabama,App State,56.5,cfbd
+2026,13,Florida State,Florida,52.5,cfbd
+2026,13,San José State,North Dakota State,40.0,cfbd
+2026,13,Memphis,Temple,64.5,cfbd
+2026,13,New Mexico,Air Force,41.5,cfbd
+2026,13,Wisconsin,Minnesota,37.5,cfbd
+2026,13,Utah,West Virginia,68.5,cfbd
+2026,13,Georgia Southern,Louisiana Tech,52.5,cfbd
+2026,13,Ball State,Central Michigan,47.5,cfbd
+2026,13,North Carolina,NC State,55.0,cfbd
+2026,13,Wyoming,UConn,48.5,cfbd
+2026,13,Charlotte,Navy,55.5,cfbd
+2026,13,Miami,Boston College,53.5,cfbd
+2026,13,Arkansas,LSU,48.0,cfbd
+2026,13,Old Dominion,Southern Miss,51.0,cfbd
+2026,13,East Carolina,Florida Atlantic,55.5,cfbd
+2026,13,Western Kentucky,Kennesaw State,54.5,cfbd
+2026,13,Georgia State,Louisiana,56.5,cfbd
+2026,13,Missouri State,Liberty,52.0,cfbd
+2026,13,James Madison,Coastal Carolina,56.0,cfbd
+2026,13,Rice,Army,48.5,cfbd
+2026,13,Florida International,Sam Houston,41.5,cfbd
+2026,13,Colorado,UCF,51.5,cfbd
+2026,13,Middle Tennessee,New Mexico State,52.5,cfbd
+2026,13,Iowa State,Kansas State,55.0,cfbd
+2026,13,Arkansas State,Troy,46.5,cfbd
+2026,13,Virginia Tech,Virginia,52.0,cfbd
+2026,13,Clemson,South Carolina,41.0,cfbd
+2026,13,BYU,Cincinnati,56.0,cfbd
+2026,13,Georgia,Georgia Tech,56.0,cfbd
+2026,13,Delaware,Jacksonville State,58.0,cfbd
+2026,13,Northern Illinois,UTEP,48.5,cfbd
+2026,13,Stanford,SMU,61.0,cfbd
+2026,13,Maryland,Penn State,50.5,cfbd
+2026,13,South Florida,Tulane,42.5,cfbd
+2026,13,North Texas,UAB,48.0,cfbd
+2026,13,Rutgers,Michigan State,47.5,cfbd
+2026,13,Oklahoma State,Kansas,67.0,cfbd
+2026,13,Washington State,San Diego State,45.5,cfbd
+2026,13,Vanderbilt,Tennessee,43.0,cfbd
+2026,13,California,Pittsburgh,47.5,cfbd
+2026,13,UNLV,Nevada,43.5,cfbd
+2026,13,Utah State,Texas State,52.0,cfbd
+2026,13,Houston,Baylor,55.5,cfbd
+2026,13,Hawai'i,Sacramento State,39.0,cfbd
 2026,14,Miami,Wake Forest,56.5,odds
+2026,13,UL Monroe,Marshall,51.0,cfbd
+2026,13,Bowling Green,Massachusetts,44.0,cfbd
